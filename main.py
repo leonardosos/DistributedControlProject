@@ -1,11 +1,10 @@
 import customtkinter
+import tkinter as tk
 
 
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
-
-        #self.toplevel_window = ToplevelWindow(self) # uncomment this line to see the Toplevel window
 
         self.title("Mission control")
         self.geometry("800x650")
@@ -45,6 +44,9 @@ class App(customtkinter.CTk):
 
         else:
             print("Launch mission clicked")
+            self.toplevel_window = ToplevelWindow(self) #Resume the mission
+            print(f'Selected {self.left_frame.spinbox_1.get_spin_value()} boats')
+            
             
 
 class ToplevelWindow(customtkinter.CTkToplevel):
@@ -52,12 +54,25 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         super().__init__(*args, **kwargs)
         self.geometry("400x300")
 
-        self.things = "Object1, Object2, Object3"
+        # Set the window to be always on top
+        self.attributes("-topmost", True)
 
-        self.text = f"The drones have find the object: \n\n {self.things}"
+        self.text = f"The mission is: \n\n ecc..."
 
         self.label = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
         self.label.pack(padx=20, pady=20)
+
+        self.progressbar = customtkinter.CTkProgressBar(self, width=200, height=20, mode="indeterminate")
+        self.progressbar.start()
+        self.progressbar.pack(pady=20)
+
+        # Schedule the stop_progressbar method to be called after 5000 milliseconds (5 seconds)
+        self.after(5000, self.stop_progressbar)
+
+    def stop_progressbar(self):
+        self.progressbar.stop()
+        self.success_label = customtkinter.CTkLabel(self, text="Successful", fg_color="green", corner_radius=6)
+        self.success_label.pack(pady=20)
 
 class LeftFrame(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -78,9 +93,8 @@ class LeftFrame(customtkinter.CTkFrame):
         self.text.pack(pady=5)
 
         self.spinbox_1 = FloatSpinbox(self, width=150, step_size=1)
-        self.spinbox_1.pack(padx=10, pady=10, fill="x")
-
-        self.spinbox_1.set(35)
+        self.spinbox_1.pack(padx=10, pady=10)
+        self.spinbox_1.set(1)
 
 
     def button1_callback(self):
@@ -130,7 +144,7 @@ class MatrixButton(customtkinter.CTkFrame):
         print(f"Matrix Button clicked at ({row}, {col})")
 
 class FloatSpinbox(customtkinter.CTkFrame):
-    def __init__(self, master, width=100, height=30, step_size=1, command=None):
+    def __init__(self, master, width=40, height=30, step_size=1, command=None):
         super().__init__(master, width=width, height=height)
 
         self.step_size = step_size
@@ -153,13 +167,13 @@ class FloatSpinbox(customtkinter.CTkFrame):
         self.add_button.grid(row=0, column=2, padx=(0, 3), pady=3)
 
         # default value
-        self.entry.insert(0, "0.0")
+        self.entry.insert(0, "0")
 
     def add_button_callback(self):
         if self.command is not None:
             self.command()
         try:
-            value = float(self.entry.get()) + self.step_size
+            value = int(self.entry.get()) + self.step_size
             self.entry.delete(0, "end")
             self.entry.insert(0, value)
         except ValueError:
@@ -169,16 +183,19 @@ class FloatSpinbox(customtkinter.CTkFrame):
         if self.command is not None:
             self.command()
         try:
-            value = float(self.entry.get()) - self.step_size
+            value = int(self.entry.get()) - self.step_size
             self.entry.delete(0, "end")
             self.entry.insert(0, value)
         except ValueError:
             return
 
 
-    def set(self, value: float):
+    def set(self, value: int):
         self.entry.delete(0, "end")
-        self.entry.insert(0, str(float(value)))
+        self.entry.insert(0, str(int(value)))
+
+    def get_spin_value(self):
+        return self.entry.get()
 
 
 
