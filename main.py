@@ -5,14 +5,12 @@ class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
-        self.toplevel_window = ToplevelWindow(self)
+        #self.toplevel_window = ToplevelWindow(self) # uncomment this line to see the Toplevel window
 
         self.title("Mission control")
         self.geometry("800x650")
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0,1), weight=1)
-
-
 
         # Right Frame with a Matrix of Buttons
         self.right_frame = RightFrame(self)
@@ -20,8 +18,12 @@ class App(customtkinter.CTk):
 
         self.already_pressed = False
 
+        # Left Frame with Settings
+        self.left_frame = LeftFrameEmpty(self)
+        self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew")
+               
         # Bottom Frame with Button
-        self.button = customtkinter.CTkButton(self, text="Select", command=self.button_callback)
+        self.button = customtkinter.CTkButton(self, text="Confirm selected terget", command=self.button_callback)
         self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
 
 
@@ -33,7 +35,7 @@ class App(customtkinter.CTk):
 
             self.already_pressed = True
             
-            # Left Frame with Settings
+            # overwrites Left Frame with Settings
             self.left_frame = LeftFrame(self)
             self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew")
 
@@ -55,20 +57,15 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         self.text = f"The drones have find the object: \n\n {self.things}"
 
         self.label = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
-
-
-
-
         self.label.pack(padx=20, pady=20)
+
 class LeftFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.title = "Settings"
-        self.title = customtkinter.CTkLabel(self, text=self.title, fg_color="gray30", corner_radius=6)
+        self.text = "Settings"
+        self.title = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
         self.title.pack(padx=10, pady=10, fill="x")
-
-
 
         self.left_button1 = customtkinter.CTkButton(self, text="Button 1", command=self.button1_callback)
         self.left_button1.pack(pady=5)
@@ -86,14 +83,20 @@ class LeftFrame(customtkinter.CTkFrame):
         self.spinbox_1.set(35)
 
 
-
-
     def button1_callback(self):
         print("Button 1 clicked")
 
     def button2_callback(self):
         print("Button 2 clicked")
 
+class LeftFrameEmpty(customtkinter.CTkFrame):
+    def __init__(self, master):
+        super().__init__(master)
+
+        self.text = "Select the target area on the map"
+        self.title = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
+
+        self.title.pack(padx=10, pady=10, fill="x",expand=True) 
 
 
 class RightFrame(customtkinter.CTkFrame):
@@ -176,6 +179,13 @@ class FloatSpinbox(customtkinter.CTkFrame):
     def set(self, value: float):
         self.entry.delete(0, "end")
         self.entry.insert(0, str(float(value)))
+
+
+
+
+
+
+# Run the app
 
 app = App()
 app.mainloop()
