@@ -12,22 +12,38 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0,1), weight=1)
 
-        # Left Frame with Buttons
-        self.left_frame = LeftFrame(self)
-        self.left_frame.grid(row=0, column=0, padx=10, pady=10, sticky="nsew")
+
 
         # Right Frame with a Matrix of Buttons
         self.right_frame = RightFrame(self)
         self.right_frame.grid(row=0, column=1, padx=10, pady=10)
 
-        # Bottom Frame with a Launch Button
-        self.button = customtkinter.CTkButton(self, text="Launch mission", command=self.button_callback)
+        self.already_pressed = False
+
+        # Bottom Frame with Button
+        self.button = customtkinter.CTkButton(self, text="Select", command=self.button_callback)
         self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
 
 
 
     def button_callback(self):
-        print("Launch button pressed")
+
+        if not self.already_pressed:
+            print("Select clicked")
+
+            self.already_pressed = True
+            
+            # Left Frame with Settings
+            self.left_frame = LeftFrame(self)
+            self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew")
+
+            # overwrites the button
+            self.button = customtkinter.CTkButton(self, text="Launch mission", command=self.button_callback)
+            self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
+
+        else:
+            print("Launch mission clicked")
+            
 
 class ToplevelWindow(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
