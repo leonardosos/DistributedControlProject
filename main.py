@@ -1,6 +1,8 @@
+from curses.textpad import Textbox
 import customtkinter
 import tkinter as tk
-
+import json
+import random
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -8,60 +10,49 @@ class App(customtkinter.CTk):
 
         self.title("Mission control")
         self.geometry("800x650")
-        customtkinter.set_appearance_mode("dark")
-        self.grid_columnconfigure((0, 1), weight=1)
-        self.grid_rowconfigure((0,1), weight=1)
+        #customtkinter.set_appearance_mode("dark")
+        #self.grid_columnconfigure((0, 1), weight=1)
+        #self.grid_rowconfigure((0,1), weight=1)
 
         # Right Frame with a Matrix of Buttons
         self.right_frame = RightFrame(self)
         self.right_frame.grid(row=0, column=1, padx=10, pady=10)
 
-        self.already_pressed = False
+        self.bottom_button_already_pressed = False
 
         # Left Frame with Settings
         self.left_frame = LeftFrameEmpty(self)
-        self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew")
+        self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew") #need to be equal to left_frame_empty
                
         # Bottom Frame with Button
-        self.button = customtkinter.CTkButton(self, text="Confirm selected terget", command=self.button_callback)
-        self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
-
+        self.bottom_button = customtkinter.CTkButton(self,
+                                                     text="Confirm selected terget", 
+                                                     fg_color="green", 
+                                                     hover_color="darkgreen",
+                                                     command=self.button_callback)
+        self.bottom_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
 
 
     def button_callback(self):
 
-        if not self.already_pressed:
+        if not self.bottom_button_already_pressed:
             print("Select clicked")
 
-            self.already_pressed = True
+            self.bottom_button_already_pressed = True
             
             # overwrites Left Frame with Settings
             self.left_frame = LeftFrame(self)
-            self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew")
+            self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew") #need to be equal to left_frame_empty
 
-            # overwrites the button
-            self.button = customtkinter.CTkButton(self, text="Launch mission", command=self.button_callback)
-            self.button.grid(row=1, column=0, padx=10, pady=10, sticky="ew", columnspan=2)
+            # change the button botton
+            self.bottom_button.configure(text="Launch mission", fg_color="green", hover_color="darkgreen")
 
         else:
             print("Launch mission clicked")
-            self.toplevel_window = ToplevelWindow(self) #Resume the mission
             print(f'Selected {self.left_frame.spinbox_1.get_spin_value()} boats')
             
-            
 
-class ToplevelWindow(customtkinter.CTkToplevel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.geometry("400x300")
-
-        # Set the window to be always on top
-        self.attributes("-topmost", True)
-
-        self.text = f"The mission is: \n\n ecc..."
-
-        self.label = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
-        self.label.pack(padx=20, pady=20)
+''' PROGRESS BAR EXAMPLE
 
         self.progressbar = customtkinter.CTkProgressBar(self, width=200, height=20, mode="indeterminate")
         self.progressbar.start()
@@ -74,6 +65,8 @@ class ToplevelWindow(customtkinter.CTkToplevel):
         self.progressbar.stop()
         self.success_label = customtkinter.CTkLabel(self, text="Successful", fg_color="green", corner_radius=6)
         self.success_label.pack(pady=20)
+
+'''
 
 class LeftFrame(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -109,7 +102,7 @@ class LeftFrameEmpty(customtkinter.CTkFrame):
         super().__init__(master)
 
         self.text = "Select the target area on the map"
-        self.title = customtkinter.CTkLabel(self, text=self.text, fg_color="gray30", corner_radius=6)
+        self.title = customtkinter.CTkLabel(self, text=self.text)
 
         self.title.pack(padx=10, pady=10, fill="x",expand=True) 
 
@@ -118,31 +111,57 @@ class RightFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.title = "Map"
-        self.title = customtkinter.CTkLabel(self, text=self.title, fg_color="gray30", corner_radius=6)
-        self.title.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
-
         self.matrix_button = MatrixButton(self)
-        self.matrix_button.grid(row=1, column=0, padx=10, pady=10, sticky="ew")
+        self.matrix_button.grid(row=0, column=0,padx=10, pady=(10,0), sticky="ew")
+
+        self.textbox = customtkinter.CTkTextbox(master=self, height=20)
+        self.textbox.insert("0.0", "Legenda: black - occupied, white - free, grey - percentage of gargabe, red - selected")
+        self.textbox.configure(state="disabled")
+        self.textbox.grid(row=1, column=0, padx=10, pady=(5,10), sticky="ew")
+
 
 class MatrixButton(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
-        self.create_matrix_of_buttons(10, 10)
 
-    def create_matrix_of_buttons(self, rows, cols):
-        for i in range(rows):  # 3 rows
-            for j in range(cols):  # 3 columns
+        # Read map.json file and get the dimensions of the matrix
+        with open('map.json', 'r') as file:
+            self.map_matrix = json.load(file)
+
+        # Create the matrix of buttons based on the loaded matrix
+        self.create_matrix_of_buttons()
+
+    def create_matrix_of_buttons(self):
+        rows = len(self.map_matrix)
+        cols = len(self.map_matrix[0]) if rows > 0 else 0
+
+        print(f"Matrix size: {rows}x{cols}")
+
+        for i in range(rows):
+            for j in range(cols):
+                value = self.map_matrix[i][j]
+                bg_color = self.map_value_to_color(value)
+
                 button = customtkinter.CTkButton(self,
                                                  text=f"({i},{j})",
                                                  command=lambda i_=i, j_=j: self.matrix_button_callback(i_, j_),
                                                  width=50,
                                                  height=50,
-                                                 corner_radius=0)
-                button.grid(row=i, column=j, padx=0, pady=0, )
+                                                 corner_radius=0,
+                                                 fg_color=bg_color)  # Set background color
+                button.grid(row=i, column=j, padx=0, pady=0)
+
+    def map_value_to_color(self, value):
+        if value == 0:
+            return "#FFFFFF"  # White for 0
+        else:
+            # Calculate grayscale based on the value (1 to 100)
+            gray_value = int(255 - (value / 100) * 255)  # Scale 0-100 to 255-0
+            return f"#{gray_value:02x}{gray_value:02x}{gray_value:02x}"  # Convert to hex
 
     def matrix_button_callback(self, row, col):
         print(f"Matrix Button clicked at ({row}, {col})")
+
 
 class FloatSpinbox(customtkinter.CTkFrame):
     def __init__(self, master, width=40, height=30, step_size=1, command=None):
@@ -198,12 +217,9 @@ class FloatSpinbox(customtkinter.CTkFrame):
     def get_spin_value(self):
         return self.entry.get()
 
+def main():
+    app = App()
+    app.mainloop()
 
-
-
-
-
-# Run the app
-
-app = App()
-app.mainloop()
+if __name__ == "__main__":
+    main()
