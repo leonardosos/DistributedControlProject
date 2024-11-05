@@ -8,6 +8,7 @@ class App(customtkinter.CTk):
 
         self.title("Mission control")
         self.geometry("800x650")
+        customtkinter.set_appearance_mode("dark")
         self.grid_columnconfigure((0, 1), weight=1)
         self.grid_rowconfigure((0,1), weight=1)
 
