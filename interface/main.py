@@ -1,8 +1,6 @@
-from curses.textpad import Textbox
 import customtkinter
-import tkinter as tk
 import json
-import random
+import os
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -10,9 +8,9 @@ class App(customtkinter.CTk):
 
         self.title("Mission control")
         self.geometry("800x650")
-        #customtkinter.set_appearance_mode("dark")
-        #self.grid_columnconfigure((0, 1), weight=1)
-        #self.grid_rowconfigure((0,1), weight=1)
+        customtkinter.set_appearance_mode("dark")
+        self.grid_columnconfigure((0, 1), weight=1)
+        self.grid_rowconfigure((0,1), weight=1)
 
         # Right Frame with a Matrix of Buttons
         self.right_frame = RightFrame(self)
@@ -124,8 +122,13 @@ class MatrixButton(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        # Read map.json file and get the dimensions of the matrix
-        with open('map.json', 'r') as file:
+        # Get the directory of the current file
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        # Build the path to map.json
+        map_json_path = os.path.join(current_dir, '../map_generator/map.json')
+
+        # Read the map from file
+        with open(map_json_path, 'r') as file:
             self.map_matrix = json.load(file)
 
         # Create the matrix of buttons based on the loaded matrix
@@ -135,6 +138,7 @@ class MatrixButton(customtkinter.CTkFrame):
         rows = len(self.map_matrix)
         cols = len(self.map_matrix[0]) if rows > 0 else 0
 
+        # Print the size of the matrix
         print(f"Matrix size: {rows}x{cols}")
 
         for i in range(rows):
@@ -143,7 +147,9 @@ class MatrixButton(customtkinter.CTkFrame):
                 bg_color = self.map_value_to_color(value)
 
                 button = customtkinter.CTkButton(self,
-                                                 text=f"({i},{j})",
+                                                 text='',#f"({i},{j})",
+                                                 border_width=1,
+                                                 border_color="black",
                                                  command=lambda i_=i, j_=j: self.matrix_button_callback(i_, j_),
                                                  width=50,
                                                  height=50,
@@ -153,7 +159,7 @@ class MatrixButton(customtkinter.CTkFrame):
 
     def map_value_to_color(self, value):
         if value == 0:
-            return "#FFFFFF"  # White for 0
+            return "#4478C6"  # White for 0
         else:
             # Calculate grayscale based on the value (1 to 100)
             gray_value = int(255 - (value / 100) * 255)  # Scale 0-100 to 255-0
