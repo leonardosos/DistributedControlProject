@@ -1,10 +1,9 @@
+
 import customtkinter
-import json
-import os
 
 from left_frame import LeftFrame
 from central_frame import CentralFrame
-
+from right_frame import RightFrame
 
 
 class App(customtkinter.CTk):
@@ -12,22 +11,26 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title("Mission control")
-        self.geometry("800x650")
+        self.geometry("1600x800")
         customtkinter.set_appearance_mode("dark")
-        #self.grid_columnconfigure((0, 1), weight=1)
-        #self.grid_rowconfigure((0,1), weight=1)
+        customtkinter.set_widget_scaling(1.2)  # widget dimensions and text size
 
+        self.grid_columnconfigure((0,1,2), weight=1)
+        self.grid_rowconfigure((0,1,2), weight=1)
+
+        
+        # Left Frame 
+        self.left_frame = LeftFrame(self)
+        self.left_frame.grid(row=1, column=0, padx=(0,10), pady=10, sticky="nsew") 
 
         # Center Frame with a Matrix of Buttons
         self.central_frame = CentralFrame(self)
-        self.central_frame.grid(row=0, column=1, padx=10, pady=10)
+        self.central_frame.grid(row=1, column=1, padx=10, pady=10)
 
-        #self.bottom_button_already_pressed = False
+        # Right Frame
+        self.right_frame = RightFrame(self)
+        self.right_frame.grid(row=1, column=2, padx=(0,10), pady=10, sticky="nsew")
 
-        # Left Frame 
-        self.left_frame = LeftFrame(self)
-        self.left_frame.grid(row=0, column=0, padx=(0,10), pady=10, sticky="nsew") #need to be equal to left_frame_empty
-        
 
 def main():
     app = App()
