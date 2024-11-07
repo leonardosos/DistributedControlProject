@@ -1,4 +1,3 @@
-from gc import garbage
 import customtkinter 
 
 class MenuBar(customtkinter.CTkFrame):
@@ -66,7 +65,7 @@ class TopView(customtkinter.CTkToplevel):
         self.button1 = customtkinter.CTkButton(self, text="Button 1")
         self.button1.grid(row=0, padx=10, pady=(30,10))
 
-        self.button2 = customtkinter.CTkButton(self, text="Export mission?")
+        self.button2 = customtkinter.CTkButton(self, text="Export mission", command=self.export_mission)
         self.button2.grid(row=1, padx=10, pady=10)
 
         self.button3 = customtkinter.CTkButton(self, text="Save and close", command=self.destroy)
@@ -74,3 +73,7 @@ class TopView(customtkinter.CTkToplevel):
 
         # Keep the window on top
         self.attributes("-topmost", True)
+    
+    def export_mission(self):
+        print("Exporting mission...")
+        print(self.master.mission_info)

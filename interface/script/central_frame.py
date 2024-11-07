@@ -11,10 +11,6 @@ class CentralFrame(customtkinter.CTkFrame):
         self.matrix_button = MatrixButton(self)
         self.matrix_button.grid(padx=10, pady=10)
 
-
-
-
-
 class MatrixButton(customtkinter.CTkFrame):
     """Frame containing a matrix of buttons."""
 
@@ -93,7 +89,7 @@ class MatrixButton(customtkinter.CTkFrame):
             self.after_cancel(self.hide_text_timer)
 
         # Schedule to hide the value after 1 second of inactivity
-        self.hide_text_timer = self.after(1000, lambda: self.hide_value(button))
+        self.hide_text_timer = self.after(1500, lambda: self.hide_value(button))
 
     def hide_value(self, button):
         """Hide the value on the button after timeout or hover loss."""

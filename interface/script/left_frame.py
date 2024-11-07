@@ -40,14 +40,14 @@ class LeftFrame(customtkinter.CTkFrame):
 
         # Button to confirm the selected target, positioned at the bottom
         self.launch_already_pressed = False
+        self.uploading_data = False
         self.bottom_button = customtkinter.CTkButton(self,
                                                      text="LAUNCH MISSION", 
                                                      fg_color="green", 
                                                      width=250,
                                                      hover_color="darkgreen",
                                                      command=self.launch_callback)
-        self.bottom_button.grid(row=10, padx=10, pady=15, sticky="ew")  # Stick to bottom
-
+        self.bottom_button.grid(row=10, padx=10, pady=15, sticky="ew")  # Stick to bottom 
 
     def update_coordinate_box(self, row, col):
         """Update the coordinate box with the selected coordinates."""
@@ -78,8 +78,13 @@ class LeftFrame(customtkinter.CTkFrame):
 
                         # Start the progress
                         self.progress_bar.start_progress()
+                        self.uploading_data = True
+
                         print("Progress started!")
-                        
+
+                        # Save the mission data
+                        self.save_mission_data()
+
                         self.launch_already_pressed = True
 
                         self.after(900, self.clean_last_clicked_button)
@@ -94,6 +99,37 @@ class LeftFrame(customtkinter.CTkFrame):
             print("You can't launch mission without selected target")
 
     
+    def save_mission_data(self):
+        """Save the mission data to the mission info dictionary."""
+        # Get the current mission ID and increment it
+        self.master.count_mission += 1
+
+        # Get the selected coordinates
+        coordinates = self.coordinate_box.get()
+
+        # Get the number of vessels
+        number_of_vessels = int(self.spinbox_1.get_spin_value())
+
+        # Get the value of the map at the selected coordinates
+        value_of_map = self.master.central_frame.matrix_button.last_clicked_value
+
+        # Create the mission data dictionary
+        mission_data = {
+            "id": self.master.count_mission,
+            "coordinates": coordinates,
+            "number_of_vessels": number_of_vessels,
+            "value_of_map": value_of_map,
+        }
+
+        # Update the number of vessels available  
+        self.master.vessel_available -= number_of_vessels
+        self.master.menu_bar.update_vessel_availability(self.master.vessel_available)
+
+        # Save the mission data to the mission info dictionary
+        self.master.mission_info[self.master.count_mission] = mission_data
+
+        print(f"Mission data saved: {self.master.mission_info[self.master.count_mission]}")
+
     def clean_last_clicked_button(self):
         """Clean the last clicked button after a delay."""
         if self.master.central_frame.matrix_button.last_clicked_button:
@@ -110,15 +146,9 @@ class LeftFrame(customtkinter.CTkFrame):
         self.after(5000, self.upload_status.destroy)
         self.after(5000, self.progress_bar.destroy)
 
-        # Update the ongoing mission count and vessel available
+        # Update the number of ongoing missions
         self.master.ongoing_mission += 1
-        self.master.vessel_available -= int(self.spinbox_1.get_spin_value())
-        self.master.garbage_collected += self.master.central_frame.matrix_button.last_clicked_value
-
-        # Update the menu bar
         self.master.menu_bar.update_ongoing_mission(self.master.ongoing_mission)
-        self.master.menu_bar.update_vessel_availability(self.master.vessel_available)
-        self.master.menu_bar.update_garbage(self.master.garbage_collected)
 
         # Update number of boat counter
         if self.master.vessel_available == 0:
@@ -128,12 +158,13 @@ class LeftFrame(customtkinter.CTkFrame):
 
         # Reset the launch button state
         self.launch_already_pressed = False
+        self.uploading_data = False
 
         print('Updated')
 
     
 class ProgressBar(customtkinter.CTkProgressBar):
-    def __init__(self, master, max_time=5000, update_interval=50):
+    def __init__(self, master, max_time=4000, update_interval=50):
         """Create a progress bar that completes and changes color smoothly over max_time milliseconds."""
         
         self.height = 25  # Progress bar height
@@ -182,7 +213,8 @@ class ProgressBar(customtkinter.CTkProgressBar):
             
             print("Progress complete!")
             self.master.mission_data_updates()
-
+            self.master.master.button_frame.status_frame.add_status(f"Status {self.master.master.count_mission}",self.master.master.count_mission)
+            print(f'A new mission has been added to the status list: {self.master.master.count_mission} with id {self.master.master.count_mission}')
 
     def change_color_based_on_progress(self, percentage):
         """Smooth color gradient transition from green to yellow to red."""
