@@ -4,6 +4,8 @@ import customtkinter
 from left_frame import LeftFrame
 from central_frame import CentralFrame
 from right_frame import RightFrame
+from welcome_tab import WelcomeTab
+from menu_bar import MenuBar
 
 
 class App(customtkinter.CTk):
@@ -18,6 +20,20 @@ class App(customtkinter.CTk):
         self.grid_columnconfigure((0,1,2), weight=1)
         self.grid_rowconfigure((0,1,2), weight=1)
 
+        # Welcome Tab
+        # self.welcome_tab = WelcomeTab(self)
+
+        self.ongoing_mission = 0
+        self.vessel_available = 4
+        self.garbage_collected = 0
+        self.target_cleaned = list()
+
+        # Menu Bar
+        self.menu_bar = MenuBar(self)
+        self.menu_bar.grid(row=0, column=0, columnspan=3, sticky="ew")
+        self.menu_bar.update_vessel_availability(self.vessel_available)
+        self.menu_bar.update_ongoing_mission(self.ongoing_mission)
+        self.menu_bar.update_garbage(self.garbage_collected)
         
         # Left Frame 
         self.left_frame = LeftFrame(self)
@@ -29,7 +45,7 @@ class App(customtkinter.CTk):
 
         # Right Frame
         self.right_frame = RightFrame(self)
-        self.right_frame.grid(row=1, column=2, padx=(0,10), pady=10, sticky="nsew")
+        self.right_frame.grid(row=1, column=2, padx=(10,0), pady=10, sticky="nsew")
 
 
 def main():

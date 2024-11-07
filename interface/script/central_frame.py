@@ -3,13 +3,13 @@ import json
 import customtkinter
 
 class CentralFrame(customtkinter.CTkFrame):
-    """Central Frame with matrix of button"""
+    """Central Frame that contain the frame matrix of buttons"""
 
     def __init__(self, master):
         super().__init__(master)
 
         self.matrix_button = MatrixButton(self)
-        self.matrix_button.pack(padx=10, pady=10, fill="both", expand=True)
+        self.matrix_button.grid(padx=10, pady=10)
 
 
 
@@ -53,7 +53,7 @@ class MatrixButton(customtkinter.CTkFrame):
                                                  text='',
                                                  border_width=1,
                                                  border_color="black",
-                                                 command=lambda i_=i, j_=j, value_=value: self.matrix_button_callback(i_, j_, value_),
+                                                 command=lambda i_=i, j_=j: self.matrix_button_callback(i_, j_),
                                                  width=60,
                                                  height=60,
                                                  corner_radius=0,
@@ -62,16 +62,17 @@ class MatrixButton(customtkinter.CTkFrame):
                 button.grid(row=i, column=j, padx=0, pady=0)
 
                 # Bind hover events: showing value on enter and hiding with a delay
-                button.bind("<Enter>", lambda event, btn=button, val=value: self.hover_enter(btn, val))
+                button.bind("<Enter>", lambda event, btn=button: self.hover_enter(btn))
 
                 row_buttons.append(button)
             self.buttons.append(row_buttons)
 
-    def hover_enter(self, button, value):
+    def hover_enter(self, button):
         """Called when the mouse enters a new button."""
-        # If the button was clicked, ignore the hover event to prevent resetting the selection.
-        if button == self.last_clicked_button:
-            return
+
+        # Get the matrix value and coordinates of the button
+        row, col = button.grid_info()["row"], button.grid_info()["column"]
+        value = self.map_matrix[row][col]
 
         # Hide the value of the previously hovered button, if any
         if self.current_hovered_button and self.current_hovered_button != button:
@@ -98,6 +99,7 @@ class MatrixButton(customtkinter.CTkFrame):
         """Hide the value on the button after timeout or hover loss."""
         # Don't hide the value if the button is the one currently selected/clicked
         if button == self.last_clicked_button:
+            button.configure(text=str(self.last_clicked_value), fg_color="red")
             return
 
         # Reset value and background color when the hover ends or timeout happens
@@ -120,7 +122,7 @@ class MatrixButton(customtkinter.CTkFrame):
             gray_value = int(255 - (value / 100) * 255)
             return f"#{gray_value:02x}{gray_value:02x}{gray_value:02x}"
 
-    def matrix_button_callback(self, row, col, value):
+    def matrix_button_callback(self, row, col):
         """Handle button click events."""
         # If there is already a clicked button, reset it
         if self.last_clicked_button:
@@ -128,15 +130,45 @@ class MatrixButton(customtkinter.CTkFrame):
             original_color = self.map_value_to_color(self.map_matrix[last_row][last_col])
             self.last_clicked_button.configure(text='', fg_color=original_color)
 
+        value = self.map_matrix[row][col]
+
         # Show the value and change background to red on the clicked button
         target_button = self.grid_slaves(row=row, column=col)[0]
         target_button.configure(text=str(value), fg_color="red")  # Red for selected state
 
         # Keep track of the currently clicked button
         self.last_clicked_button = target_button
+        # Keep track of the garbage value
+        self.last_clicked_value = self.map_matrix[row][col]
 
         # Print the selected coordinates
-        print(f"Selected coordinates: ({row}, {col})")
+        print(f"Selected coordinates: ({row}, {col}), with {value} kg of garbage")
 
         # Update the coordinate box in the left frame
         self.master.master.left_frame.update_coordinate_box(row, col)
+        
+    def clean_button(self, row, col):
+        """Clean the button by setting its value to 0 and changing its color to the default blue."""
+        # Update the map matrix to set the value to 0
+        self.map_matrix[row][col] = 0
+
+        # Get the button at the specified row and column
+        button = self.grid_slaves(row=row, column=col)[0]
+
+        # Update the button's appearance
+        button.configure(text='', fg_color="#4478C6")  # Blue for value 0
+
+        # Reset tracking variables and cancel any pending hover timeout
+        if button == self.current_hovered_button:
+            self.current_hovered_button = None
+        if button == self.last_clicked_button:
+            self.last_clicked_button = None
+        if self.hide_text_timer:
+            self.after_cancel(self.hide_text_timer)
+            self.hide_text_timer = None
+
+        # Re-bind the hover events for the cleaned button
+        button.bind("<Enter>", lambda event, btn=button: self.hover_enter(btn))
+
+        # Print the updated matrix value for debugging
+        print(f"Updated matrix value at ({row}, {col}): {self.map_matrix[row][col]}")

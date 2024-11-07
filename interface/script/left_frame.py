@@ -11,8 +11,8 @@ class LeftFrame(customtkinter.CTkFrame):
         self.grid_rowconfigure(9, weight=3)  # Allow row 6 (before bottom_button) to expand
         self.grid_columnconfigure(0, weight=1)  # Allow the frame to expand horizontally
 
-        # Label for "SETTINGS"
-        self.title = customtkinter.CTkLabel(self, text="Settings", corner_radius=6)
+        # Label 
+        self.title = customtkinter.CTkLabel(self, text="Mission configuration", corner_radius=6)
         self.title.grid(row=0, padx=10, pady=15, sticky="n")
 
         # Label for "Coordinate selected target"
@@ -55,29 +55,83 @@ class LeftFrame(customtkinter.CTkFrame):
         self.coordinate_box.insert(0, f"({row}, {col})")
 
     def launch_callback(self):
-        print("Button launch pressed")
-        print(f"Number of boats selected: {self.spinbox_1.get_spin_value()}")  
-        
-        if not self.launch_already_pressed:
+        try:
+            if self.master.central_frame.matrix_button.last_clicked_value:
+                
+                if int(self.spinbox_1.get_spin_value()) != 0:
 
-            self.text = "Uploading data..."
-            self.upload_status = customtkinter.CTkLabel(self, text=self.text, corner_radius=6)
-            self.upload_status.grid(row=6 ,pady=(0, 5))
+                    #if self.master.central_frame.matrix_button.last_clicked_button is None:
+                    #    print('obatin')
 
-            # Create a progress bar
-            self.progress_bar = ProgressBar(self) 
-            self.progress_bar.grid(row=7)
+                    print("Button launch pressed")
+                    print(f"Number of boats selected: {self.spinbox_1.get_spin_value()}")  
+                    
+                    if not self.launch_already_pressed:
 
-            # Start the progress
-            self.progress_bar.start_progress()
+                        self.text = "Uploading data..."
+                        self.upload_status = customtkinter.CTkLabel(self, text=self.text, corner_radius=6)
+                        self.upload_status.grid(row=6 ,pady=(0, 5))
+
+                        # Create a progress bar
+                        self.progress_bar = ProgressBar(self) 
+                        self.progress_bar.grid(row=7)
+
+                        # Start the progress
+                        self.progress_bar.start_progress()
+                        print("Progress started!")
+                        
+                        self.launch_already_pressed = True
+
+                        self.after(900, self.clean_last_clicked_button)
+                else:
+                    print("You can't launch mission without select the number of boat")
+            else:
+                # Display error
+                self.text = "The mission target is empty!\n\nPlease select a valid target before launching the mission."
+                print(self.text)
+                TopViewError(self.text)
+        except AttributeError:
+            print("You can't launch mission without selected target")
+
+    
+    def clean_last_clicked_button(self):
+        """Clean the last clicked button after a delay."""
+        if self.master.central_frame.matrix_button.last_clicked_button:
+            row = self.master.central_frame.matrix_button.last_clicked_button.grid_info()["row"]
+            col = self.master.central_frame.matrix_button.last_clicked_button.grid_info()["column"]
+            self.master.central_frame.matrix_button.clean_button(row, col)
             
-            self.launch_already_pressed = True
+    def mission_data_updates(self):
+        """Update the mission data with the selected coordinates and number of boats."""
+        print("Updating mission data...")
 
+        # Clean up the left frame progress bar and status text
+        self.upload_status.configure(text="Uploading complete!")
+        self.after(5000, self.upload_status.destroy)
+        self.after(5000, self.progress_bar.destroy)
 
+        # Update the ongoing mission count and vessel available
+        self.master.ongoing_mission += 1
+        self.master.vessel_available -= int(self.spinbox_1.get_spin_value())
+        self.master.garbage_collected += self.master.central_frame.matrix_button.last_clicked_value
 
-        
+        # Update the menu bar
+        self.master.menu_bar.update_ongoing_mission(self.master.ongoing_mission)
+        self.master.menu_bar.update_vessel_availability(self.master.vessel_available)
+        self.master.menu_bar.update_garbage(self.master.garbage_collected)
 
+        # Update number of boat counter
+        if self.master.vessel_available == 0:
+            self.spinbox_1.set(0)
+        else:
+            self.spinbox_1.set(1)
 
+        # Reset the launch button state
+        self.launch_already_pressed = False
+
+        print('Updated')
+
+    
 class ProgressBar(customtkinter.CTkProgressBar):
     def __init__(self, master, max_time=5000, update_interval=50):
         """Create a progress bar that completes and changes color smoothly over max_time milliseconds."""
@@ -125,11 +179,10 @@ class ProgressBar(customtkinter.CTkProgressBar):
             # Ensure the progress is fully filled to 100%
             self.set(1)
             self.change_color_based_on_progress(100)  # Set the final color at 100%
+            
             print("Progress complete!")
+            self.master.mission_data_updates()
 
-            self.master.upload_status.configure(text="Uploading complete!")
-            self.after(5000, self.master.upload_status.destroy)
-            self.after(5000, self.master.progress_bar.destroy)
 
     def change_color_based_on_progress(self, percentage):
         """Smooth color gradient transition from green to yellow to red."""
@@ -192,9 +245,17 @@ class FloatSpinbox(customtkinter.CTkFrame):
         if self.command is not None:
             self.command()
         try:
-            value = int(self.entry.get()) + self.step_size
-            self.entry.delete(0, "end")
-            self.entry.insert(0, value)
+            if int(self.entry.get()) < int(self.master.master.vessel_available):
+                value = int(self.entry.get()) + self.step_size
+                self.entry.delete(0, "end")
+                self.entry.insert(0, value)
+            else:
+                # Display error
+                self.text = f'''Current number of vessels: {self.master.master.vessel_available}
+                Vessel requested: {int(self.entry.get())}\n\nNo more vessels available!
+                '''
+                print(self.text)
+                TopViewError(self.text)
         except ValueError:
             return
 
@@ -202,9 +263,10 @@ class FloatSpinbox(customtkinter.CTkFrame):
         if self.command is not None:
             self.command()
         try:
-            value = int(self.entry.get()) - self.step_size
-            self.entry.delete(0, "end")
-            self.entry.insert(0, value)
+            if int(self.entry.get()) > 0:
+                value = int(self.entry.get()) - self.step_size
+                self.entry.delete(0, "end")
+                self.entry.insert(0, value)
         except ValueError:
             return
 
@@ -214,3 +276,20 @@ class FloatSpinbox(customtkinter.CTkFrame):
 
     def get_spin_value(self):
         return self.entry.get()
+
+class TopViewError(customtkinter.CTkToplevel):
+    def __init__(self, text ,*args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.geometry()
+        self.title("Error message")
+
+        self.grid_columnconfigure(0, weight=1)
+
+        self.label = customtkinter.CTkLabel(self, text=text)
+        self.label.grid(padx=20, pady=20, sticky="ew")
+
+        # Keep the window on top
+        self.attributes("-topmost", True)
+
+        self.button = customtkinter.CTkButton(self, text="Okay", command=self.destroy)
+        self.button.grid(pady=20, padx=20 ,sticky="ew")

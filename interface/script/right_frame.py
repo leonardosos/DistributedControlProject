@@ -7,7 +7,7 @@ class RightFrame(customtkinter.CTkFrame):
         super().__init__(master)
         self.grid_columnconfigure(0, weight=1)  # Allow the frame to expand horizontally
 
-        self.text = '''Info Menù\n(keep the cursor on the cell to know the info)'''
+        self.text = '''Info cell\n(keep the cursor on the cell to know the info)'''
         self.title = customtkinter.CTkLabel(self, text=self.text, corner_radius=6, width=250)
         self.title.grid(row=0, padx=10, pady=15, sticky="n")
 
@@ -49,7 +49,7 @@ class RightFrame(customtkinter.CTkFrame):
 class VerticalProgressBar(customtkinter.CTkFrame):
     def __init__(self, master, width=50, height=170):
         """Create a vertical progress bar with a method to set its value."""
-        super().__init__(master, width=width, height=height)
+        super().__init__(master, width=width, height=height, fg_color="#2B2B2B")
 
         # Define the vertical progress bar layout and options
         self.progress_bar = customtkinter.CTkProgressBar(self, orientation="vertical", width=20, height=height)
