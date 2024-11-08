@@ -137,8 +137,11 @@ class MatrixButton(customtkinter.CTkFrame):
         # Keep track of the garbage value
         self.last_clicked_value = self.map_matrix[row][col]
 
-        # Print the selected coordinates
-        print(f"Selected coordinates: ({row}, {col}), with {value} kg of garbage")
+        # Print and log the selected coordinates
+        text_ = f"Selected coordinates: ({row}, {col}), with {value} kg of garbage"
+        self.master.master.button_frame.log_frame.add_text(text_)
+        print(text_)
+
 
         # Update the coordinate box in the left frame
         self.master.master.left_frame.update_coordinate_box(row, col)
@@ -166,5 +169,7 @@ class MatrixButton(customtkinter.CTkFrame):
         # Re-bind the hover events for the cleaned button
         button.bind("<Enter>", lambda event, btn=button: self.hover_enter(btn))
 
-        # Print the updated matrix value for debugging
-        print(f"Updated matrix value at ({row}, {col}): {self.map_matrix[row][col]}")
+        # Print and log the updated matrix value for debugging
+        text_ = f"Updated matrix value at ({row}, {col}): {self.map_matrix[row][col]} after cleaning"
+        self.master.master.button_frame.log_frame.add_text(text_)
+        print(text_)

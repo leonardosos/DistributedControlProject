@@ -1,4 +1,6 @@
 import customtkinter 
+import pprint
+
 
 class MenuBar(customtkinter.CTkFrame):
     def __init__(self, master):
@@ -35,7 +37,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.garbage_entry.insert(0, "0")  # Initial value
 
     def open_top_view(self):
-        top_view = TopView()
+        top_view = TopView(self)
 
     def update_vessel_availability(self, value):
         """Update the vessel availability entry with the given value."""
@@ -75,5 +77,10 @@ class TopView(customtkinter.CTkToplevel):
         self.attributes("-topmost", True)
     
     def export_mission(self):
-        print("Exporting mission...")
-        print(self.master.mission_info)
+        print("Exporting missions...")
+
+        self.master.master.button_frame.log_frame.add_text("Exporting missions data...")
+
+        pprint.pprint(self.master.master.mission_info)
+
+        self.master.master.button_frame.log_frame.add_text("Missions data exported")

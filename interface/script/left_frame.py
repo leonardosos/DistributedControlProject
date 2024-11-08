@@ -55,48 +55,70 @@ class LeftFrame(customtkinter.CTkFrame):
         self.coordinate_box.insert(0, f"({row}, {col})")
 
     def launch_callback(self):
+        # Catch the error if no target is selected
         try:
+            # Check if the last clicked button has a value of garbage
             if self.master.central_frame.matrix_button.last_clicked_value:
-                
+                # Check if the number of boats is selected
                 if int(self.spinbox_1.get_spin_value()) != 0:
 
-                    #if self.master.central_frame.matrix_button.last_clicked_button is None:
-                    #    print('obatin')
-
-                    print("Button launch pressed")
                     print(f"Number of boats selected: {self.spinbox_1.get_spin_value()}")  
                     
+                    text_ = f"Number of boats selected: {self.spinbox_1.get_spin_value()}"
+                    self.master.button_frame.log_frame.add_text(text_)
+
+                    print("Button launch pressed")
+
+                    text_ = "Button launch pressed"
+                    self.master.button_frame.log_frame.add_text(text_)
+                    
+                    # Check if the uploading process is already in progress
                     if not self.launch_already_pressed:
 
+                        # Create a label to display the upload status
                         self.text = "Uploading data..."
                         self.upload_status = customtkinter.CTkLabel(self, text=self.text, corner_radius=6)
                         self.upload_status.grid(row=6 ,pady=(0, 5))
-
                         # Create a progress bar
                         self.progress_bar = ProgressBar(self) 
                         self.progress_bar.grid(row=7)
 
-                        # Start the progress
-                        self.progress_bar.start_progress()
-                        self.uploading_data = True
-
-                        print("Progress started!")
+                        # CORE FUNCTIONALITY
 
                         # Save the mission data
                         self.save_mission_data()
 
+                        # Update the number of vessels available  
+                        self.master.vessel_available -= int(self.spinbox_1.get_spin_value())
+                        self.master.menu_bar.update_vessel_availability(self.master.vessel_available)
+
+                        # Start the progress and at the end handle the mission data updates
+                        self.progress_bar.start_progress(self.master.count_mission)
+
+                        print("Data uploading progress is started!")
+
+                        # Set the uploading data flag to True to prevent multiple uploads
                         self.launch_already_pressed = True
 
+                        # Clean the target area after a delay
                         self.after(900, self.clean_last_clicked_button)
+
                 else:
                     print("You can't launch mission without select the number of boat")
+
+                    text_ = "You can't launch mission without select the number of boat"
+                    self.master.button_frame.log_frame.add_text(text_)
             else:
-                # Display error
                 self.text = "The mission target is empty!\n\nPlease select a valid target before launching the mission."
                 print(self.text)
+                self.master.button_frame.log_frame.add_text(self.text)
+                # Puopup an error message if no target is selected
                 TopViewError(self.text)
         except AttributeError:
             print("You can't launch mission without selected target")
+
+            text_ = "You can't launch mission without selected target"
+            self.master.button_frame.log_frame.add_text(text_)
 
     
     def save_mission_data(self):
@@ -121,14 +143,15 @@ class LeftFrame(customtkinter.CTkFrame):
             "value_of_map": value_of_map,
         }
 
-        # Update the number of vessels available  
-        self.master.vessel_available -= number_of_vessels
-        self.master.menu_bar.update_vessel_availability(self.master.vessel_available)
-
         # Save the mission data to the mission info dictionary
         self.master.mission_info[self.master.count_mission] = mission_data
 
         print(f"Mission data saved: {self.master.mission_info[self.master.count_mission]}")
+
+        text_ = f"Mission data saved: {self.master.mission_info[self.master.count_mission]}"
+        self.master.button_frame.log_frame.add_text(text_)
+
+        
 
     def clean_last_clicked_button(self):
         """Clean the last clicked button after a delay."""
@@ -138,13 +161,12 @@ class LeftFrame(customtkinter.CTkFrame):
             self.master.central_frame.matrix_button.clean_button(row, col)
             
     def mission_data_updates(self):
-        """Update the mission data with the selected coordinates and number of boats."""
+        """Update on going mission and destroy status bar"""
         print("Updating mission data...")
+        self.master.button_frame.log_frame.add_text("Updating mission data...")
 
         # Clean up the left frame progress bar and status text
         self.upload_status.configure(text="Uploading complete!")
-        self.after(5000, self.upload_status.destroy)
-        self.after(5000, self.progress_bar.destroy)
 
         # Update the number of ongoing missions
         self.master.ongoing_mission += 1
@@ -158,9 +180,12 @@ class LeftFrame(customtkinter.CTkFrame):
 
         # Reset the launch button state
         self.launch_already_pressed = False
-        self.uploading_data = False
 
         print('Updated')
+        self.master.button_frame.log_frame.add_text("Updated")
+
+        self.after(5000, self.upload_status.destroy)
+        self.after(5000, self.progress_bar.destroy)
 
     
 class ProgressBar(customtkinter.CTkProgressBar):
@@ -190,9 +215,9 @@ class ProgressBar(customtkinter.CTkProgressBar):
         self.yellow = (255, 255, 0)  # Yellow
         self.red = (255, 0, 0)  # Red
 
-    def start_progress(self):
-        """Start filling the progress bar over max_time with smooth color changes."""
-        
+
+    def start_progress(self, count_mission):
+        """Increment the progress bar keeping the countmission parameter"""
         # Calculate how much progress to increment in each update
         increments = self.update_interval / self.max_time
         self.progress += increments  # Update the progress
@@ -205,27 +230,37 @@ class ProgressBar(customtkinter.CTkProgressBar):
             self.change_color_based_on_progress(self.progress * 100)
 
             # Re-run this function after `update_interval` milliseconds
-            self.after(self.update_interval, self.start_progress)
+            self.after(self.update_interval, lambda: self.start_progress(count_mission))
         else:
             # Ensure the progress is fully filled to 100%
             self.set(1)
             self.change_color_based_on_progress(100)  # Set the final color at 100%
             
             print("Progress complete!")
-            self.master.mission_data_updates()
-            self.master.master.button_frame.status_frame.add_status(f"Status {self.master.master.count_mission}",self.master.master.count_mission)
-            print(f'A new mission has been added to the status list: {self.master.master.count_mission} with id {self.master.master.count_mission}')
+            self.master.master.button_frame.log_frame.add_text("Progress complete!")
 
+            # Update mission on going on and destroy progress bar
+            self.master.mission_data_updates()
+
+            # Create status bar on bottom frame
+            self.master.master.button_frame.status_frame.add_status(f"Status {count_mission}", count_mission)
+            print(f'A new mission has been added to the status list: {count_mission} with id {count_mission}')
+
+            text_ = f'A new mission has been added to the status list: {count_mission} with id {count_mission}'
+            self.master.master.button_frame.log_frame.add_text(text_)
+
+            return
+        
     def change_color_based_on_progress(self, percentage):
         """Smooth color gradient transition from green to yellow to red."""
         if percentage <= 50:
             # From green (0%) to yellow (50%)
             factor = percentage / 50  # Normalize between 0 and 1
-            r, g, b = self.interpolate_color(self.green, self.yellow, factor)
+            r, g, b = self.interpolate_color(self.red, self.yellow, factor)
         else:
             # From yellow (50%) to red (100%)
             factor = (percentage - 50) / 50  # Normalize between 0 and 1
-            r, g, b = self.interpolate_color(self.yellow, self.red, factor)
+            r, g, b = self.interpolate_color(self.yellow, self.green, factor)
 
         # Convert the RGB color to a hex format and apply it
         hex_color = self.rgb_to_hex(r, g, b)
@@ -287,6 +322,7 @@ class FloatSpinbox(customtkinter.CTkFrame):
                 Vessel requested: {int(self.entry.get())}\n\nNo more vessels available!
                 '''
                 print(self.text)
+                self.master.master.button_frame.log_frame.add_text(self.text)
                 TopViewError(self.text)
         except ValueError:
             return

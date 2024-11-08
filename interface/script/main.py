@@ -22,7 +22,7 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0,1,2), weight=1)
 
         # Welcome Tab
-        # self.welcome_tab = WelcomeTab(self)
+        self.welcome_tab = WelcomeTab(self)
 
         self.count_mission = 0
         self.ongoing_mission = 0
@@ -53,6 +53,7 @@ class App(customtkinter.CTk):
         self.button_frame = ButtonFrame(self)
         self.button_frame.grid(row=2, column=0, columnspan=3, sticky="nsew")
 
+        self.button_frame.log_frame.add_text("Start mission controller")
 
 def main():
     app = App()
@@ -60,3 +61,16 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+''' LOG TEXT
+self.button_frame.log_frame.add_text("hey")
+
+text_ = 
+self.button_frame.log_frame.add_text(text_)
+
+
+print(f"Mission completed #{id_mission}")
+text_ = f"Mission completed #{id_mission}"
+self.master.log_frame.add_text(text_)
+'''
