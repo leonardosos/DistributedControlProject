@@ -120,6 +120,9 @@ class MatrixButton(customtkinter.CTkFrame):
 
     def matrix_button_callback(self, row, col):
         """Handle button click events."""
+
+        self.master.master.left_frame.unlock_frame()
+
         # If there is already a clicked button, reset it
         if self.last_clicked_button:
             last_row, last_col = self.last_clicked_button.grid_info()["row"], self.last_clicked_button.grid_info()["column"]

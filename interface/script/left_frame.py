@@ -5,7 +5,7 @@ class LeftFrame(customtkinter.CTkFrame):
     """Left frame with settings"""
 
     def __init__(self, master):
-        super().__init__(master)
+        super().__init__(master, fg_color="#4D4D4D")
 
         # Configuring the frame's grid layout to allow expansion of rows
         self.grid_rowconfigure(9, weight=3)  # Allow row 6 (before bottom_button) to expand
@@ -35,7 +35,7 @@ class LeftFrame(customtkinter.CTkFrame):
         self.spinbox_1.grid(row=4, padx=10)
 
         # Creating an empty row that will expand to push the button down
-        self.empty_space = customtkinter.CTkLabel(self, text="")  # An empty label creates space
+        self.empty_space = customtkinter.CTkLabel(self, text="FRAME LOCK,\nSELECT A TARGET TO UNLOCK")  # An empty label creates space
         self.empty_space.grid(row=5, pady=(20, 5))  # Row 5 is a spacer
 
         # Button to confirm the selected target, positioned at the bottom
@@ -43,11 +43,36 @@ class LeftFrame(customtkinter.CTkFrame):
         self.uploading_data = False
         self.bottom_button = customtkinter.CTkButton(self,
                                                      text="LAUNCH MISSION", 
-                                                     fg_color="green", 
+                                                     fg_color="gray", 
                                                      width=250,
                                                      hover_color="darkgreen",
                                                      command=self.launch_callback)
         self.bottom_button.grid(row=10, padx=10, pady=15, sticky="ew")  # Stick to bottom 
+
+        # Lock the frame initially
+        self.unlock = False  
+        self.spinbox_1.entry.configure(state="disabled")
+        self.bottom_button.configure(state="disabled")
+        self.coordinate_box.configure(state="disabled")
+
+    def unlock_frame(self):
+        """Unlock the frame to allow user interaction."""
+
+        # Enable the widgets if the frame is unlocked only once
+        if not self.unlock:
+            print("Frame unlocked")  
+            self.master.button_frame.log_frame.add_text("Frame unlocked")
+
+            self.configure(fg_color="#2B2B2B")
+            self.empty_space.configure(text="")  # Remove the text to make the row smaller
+            self.spinbox_1.entry.configure(state="normal")
+            self.bottom_button.configure(state="normal")
+            self.bottom_button.configure(fg_color="green")
+            self.coordinate_box.configure(state="normal")
+            self.spinbox_1.subtract_button.configure(fg_color="green")
+            self.spinbox_1.add_button.configure(fg_color="green")
+
+        self.unlock = True
 
     def update_coordinate_box(self, row, col):
         """Update the coordinate box with the selected coordinates."""
@@ -295,14 +320,16 @@ class FloatSpinbox(customtkinter.CTkFrame):
         self.grid_columnconfigure(1, weight=1)  # entry expands
 
         self.subtract_button = customtkinter.CTkButton(self, text="-", width=height-6, height=height-6,
-                                                       command=self.subtract_button_callback)
+                                                       command=self.subtract_button_callback,
+                                                       fg_color="gray")
         self.subtract_button.grid(row=0, column=0, padx=(3, 0), pady=3)
 
         self.entry = customtkinter.CTkEntry(self, width=width-(2*height), height=height-6, border_width=0, justify="center")
         self.entry.grid(row=0, column=1, columnspan=1, padx=3, pady=3, sticky="ew")
 
         self.add_button = customtkinter.CTkButton(self, text="+", width=height-6, height=height-6,
-                                                  command=self.add_button_callback)
+                                                  command=self.add_button_callback,
+                                                  fg_color="gray")
         self.add_button.grid(row=0, column=2, padx=(0, 3), pady=3)
 
         # default value

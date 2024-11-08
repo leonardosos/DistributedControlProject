@@ -36,6 +36,7 @@ cd DistributedControlProject
 ```bash
 python map_generator/generate_map.py
 ```
+or use the map.json already present in the folder
 
 4. Launch the interface:
 ```bash

@@ -8,7 +8,6 @@ from welcome_tab import WelcomeTab
 from menu_bar import MenuBar
 from button_frame import ButtonFrame
 
-
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
@@ -26,7 +25,7 @@ class App(customtkinter.CTk):
 
         self.count_mission = 0
         self.ongoing_mission = 0
-        self.vessel_available = 4
+        self.vessel_available = 14
         self.garbage_collected = 0
         self.mission_info = dict()
 
@@ -61,16 +60,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-''' LOG TEXT
-self.button_frame.log_frame.add_text("hey")
-
-text_ = 
-self.button_frame.log_frame.add_text(text_)
-
-
-print(f"Mission completed #{id_mission}")
-text_ = f"Mission completed #{id_mission}"
-self.master.log_frame.add_text(text_)
-'''

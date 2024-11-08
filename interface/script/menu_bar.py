@@ -9,7 +9,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.columnconfigure(2, weight=1)
 
         # Menu button to open TopView
-        self.menu_button = customtkinter.CTkButton(self,fg_color='grey', height=25, width=100 ,text="Menù", command=self.open_top_view)
+        self.menu_button = customtkinter.CTkButton(self, height=25, width=100 ,text="Menù", fg_color="#444444", command=self.open_top_view)
         self.menu_button.grid(row=0, column=0, padx=20, pady=10)
 
         # Vessel availability
