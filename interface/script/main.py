@@ -25,7 +25,7 @@ class App(customtkinter.CTk):
 
         self.count_mission = 0
         self.ongoing_mission = 0
-        self.vessel_available = 14
+        self.vessel_available = 5
         self.garbage_collected = 0
         self.mission_info = dict()
 

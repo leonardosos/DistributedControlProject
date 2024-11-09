@@ -25,7 +25,7 @@ class LogFrame(customtkinter.CTkFrame):
         self.label = customtkinter.CTkLabel(self, text="Log:")
         self.label.grid(row=0, column=0, padx=10, pady=5, sticky="nw")
 
-        self.text_box = customtkinter.CTkTextbox(self, width=1000, border_width=1, border_color="black")#, font=(None, 15))
+        self.text_box = customtkinter.CTkTextbox(self, width=1000, border_width=1, border_color="black", font=(None, 13.5))
         self.text_box.grid(row=1, column=0, padx=(0,10), pady=(0,10), sticky="nsew")
 
         self.grid_columnconfigure(0, weight=1)
