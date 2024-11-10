@@ -102,7 +102,7 @@ class StatusFrame(customtkinter.CTkFrame):
 
 # Define a new ProgressBar
 class ProgressBar(customtkinter.CTkProgressBar):
-    def __init__(self, master,id_mission, max_time=5000, update_interval=50):
+    def __init__(self, master,id_mission, max_time=7000, update_interval=50):
         super().__init__(master ,height=25, corner_radius=12, progress_color="green", border_color="black")
         self.progress = 0
         self.max_time = max_time
