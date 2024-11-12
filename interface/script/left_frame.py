@@ -35,7 +35,7 @@ class LeftFrame(customtkinter.CTkFrame):
         self.spinbox_1.grid(row=4, padx=10)
 
         # Creating an empty row that will expand to push the button down
-        self.empty_space = customtkinter.CTkLabel(self, text="FRAME LOCK,\nSELECT A TARGET TO UNLOCK")  # An empty label creates space
+        self.empty_space = customtkinter.CTkLabel(self, text="THIS FRAME IS LOCKED.\nSELECT A TARGET TO UNLOCK")  # An empty label creates space
         self.empty_space.grid(row=5, pady=(20, 5))  # Row 5 is a spacer
 
         # Button to confirm the selected target, positioned at the bottom
@@ -44,10 +44,10 @@ class LeftFrame(customtkinter.CTkFrame):
         self.bottom_button = customtkinter.CTkButton(self,
                                                      text="LAUNCH MISSION", 
                                                      fg_color="gray", 
-                                                     width=250,
+                                                     #width=250,
                                                      hover_color="darkgreen",
                                                      command=self.launch_callback)
-        self.bottom_button.grid(row=10, padx=10, pady=15, sticky="ew")  # Stick to bottom 
+        self.bottom_button.grid(row=10, padx=30, pady=15, sticky="ew")  # Stick to bottom 
 
         # Lock the frame initially
         self.unlock = False  
@@ -135,10 +135,13 @@ class LeftFrame(customtkinter.CTkFrame):
                     self.master.button_frame.log_frame.add_text(text_)
             else:
                 self.text = "The mission target is empty!\n\nPlease select a valid target before launching the mission."
-                print(self.text)
-                self.master.button_frame.log_frame.add_text(self.text)
                 # Puopup an error message if no target is selected
                 TopViewError(self.text)
+
+                self.text = "The mission target is empty! Please select a valid target before launching the mission."
+                print(self.text)
+                self.master.button_frame.log_frame.add_text(self.text)
+
         except AttributeError:
             print("You can't launch mission without selected target")
 
@@ -348,9 +351,11 @@ class FloatSpinbox(customtkinter.CTkFrame):
                 self.text = f'''Current number of vessels: {self.master.master.vessel_available}
                 Vessel requested: {int(self.entry.get())}\n\nNo more vessels available!
                 '''
-                print(self.text)
-                self.master.master.button_frame.log_frame.add_text(self.text)
                 TopViewError(self.text)
+                
+                self.text = f"No more vessels available! Max number of vessels: {self.master.master.vessel_available}"
+                self.master.master.button_frame.log_frame.add_text(self.text)
+                print(self.text)
         except ValueError:
             return
 

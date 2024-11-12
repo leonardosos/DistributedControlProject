@@ -27,7 +27,7 @@ class RightFrame(customtkinter.CTkFrame):
         self.vertical_progressbar.grid(row=4, padx=10)
 
         # Advice from systems 
-        self.advice_label = customtkinter.CTkLabel(self, text="For cleaning this area you should sent:", corner_radius=6)
+        self.advice_label = customtkinter.CTkLabel(self, text="Suggested vessels for optimal cleaning of the area:", corner_radius=6)
         self.advice_label.grid(row=5, pady=(50, 5))
 
         self.advice_box = customtkinter.CTkEntry(self, width=150, height=30, border_width=0, justify="center")
@@ -40,7 +40,7 @@ class RightFrame(customtkinter.CTkFrame):
         self.coordinate_box.insert(0, f"({row}, {col})")
 
         self.advice_box.delete(0, "end")
-        self.advice_box.insert(0, f"{value//20} boats and {value%20} people")
+        self.advice_box.insert(0, f"{value//20}")
 
         self.vertical_progressbar.set_progress(value)
 

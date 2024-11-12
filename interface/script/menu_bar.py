@@ -9,7 +9,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.columnconfigure(2, weight=1)
 
         # Menu button to open TopView
-        self.menu_button = customtkinter.CTkButton(self, height=25, width=100 ,text="Menù", fg_color="#444444", command=self.open_top_view)
+        self.menu_button = customtkinter.CTkButton(self, height=25, width=100 ,text="Menu", fg_color="#444444", command=self.open_top_view)
         self.menu_button.grid(row=0, column=0, padx=20, pady=10)
 
         # Vessel availability
@@ -33,7 +33,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.garbage_label.grid(row=0, column=6, padx=5, pady=10, sticky="e")
 
         self.garbage_entry = customtkinter.CTkEntry(self, width=50, justify="center")
-        self.garbage_entry.grid(row=0, column=7, padx=(10,50), pady=10, sticky="e")
+        self.garbage_entry.grid(row=0, column=7, padx=(10,20), pady=10, sticky="e")
         self.garbage_entry.insert(0, "0")  # Initial value
 
     def open_top_view(self):
@@ -59,12 +59,12 @@ class TopView(customtkinter.CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.geometry("400x300")
-        self.title("Menù")
+        self.title("Menu")
 
         self.columnconfigure(0, weight=1)
 
         # Buttons in the TopView
-        self.button1 = customtkinter.CTkButton(self, text="Button 1")
+        self.button1 = customtkinter.CTkButton(self, text="Button TODO")
         self.button1.grid(row=0, padx=10, pady=(30,10))
 
         self.button2 = customtkinter.CTkButton(self, text="Export mission", command=self.export_mission)

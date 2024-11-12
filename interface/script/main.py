@@ -13,9 +13,10 @@ class App(customtkinter.CTk):
         super().__init__()
 
         self.title("Mission control")
-        self.geometry("1600x930")
+        
         customtkinter.set_appearance_mode("dark")
-        #customtkinter.set_widget_scaling(1.2)  # widget dimensions and text size
+        customtkinter.set_widget_scaling(1.1)  # widget dimensions and text size
+        self.attributes("-fullscreen", True)  # Start in full-screen mode
 
         self.grid_columnconfigure((0,1,2), weight=1)
         self.grid_rowconfigure((0,1,2), weight=1)
@@ -50,7 +51,7 @@ class App(customtkinter.CTk):
 
         # Button Frame
         self.button_frame = ButtonFrame(self)
-        self.button_frame.grid(row=2, column=0, columnspan=3, sticky="nsew")
+        self.button_frame.grid(row=2, column=0, columnspan=3, padx = 0 , pady=(20,0), sticky="nsew")
 
         self.button_frame.log_frame.add_text("Start mission controller")
 
