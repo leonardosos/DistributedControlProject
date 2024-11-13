@@ -12,11 +12,11 @@ class LeftFrame(customtkinter.CTkFrame):
         self.grid_columnconfigure(0, weight=1)  # Allow the frame to expand horizontally
 
         # Label 
-        self.title = customtkinter.CTkLabel(self, text="Mission configuration", corner_radius=6)
+        self.title = customtkinter.CTkLabel(self, text="Mission Profile", corner_radius=6)
         self.title.grid(row=0, padx=10, pady=15, sticky="n")
 
         # Label for "Coordinate selected target"
-        self.text = "Coordinate selected target"
+        self.text = "To start a new mission, select a target cell on the map"
         self.text = customtkinter.CTkLabel(self, text=self.text, corner_radius=6)
         self.text.grid(row=1, pady=(50, 5))
 
@@ -25,7 +25,7 @@ class LeftFrame(customtkinter.CTkFrame):
         self.coordinate_box.grid(row=2, padx=10)
 
         # Label for "Select the number of boats"
-        self.text = "Select the number of boats"
+        self.text = "Number of Vessels involved"
         self.text = customtkinter.CTkLabel(self, text=self.text, corner_radius=6)
         self.text.grid(row=3, pady=(50, 5))
 
@@ -35,7 +35,7 @@ class LeftFrame(customtkinter.CTkFrame):
         self.spinbox_1.grid(row=4, padx=10)
 
         # Creating an empty row that will expand to push the button down
-        self.empty_space = customtkinter.CTkLabel(self, text="THIS FRAME IS LOCKED.\nSELECT A TARGET TO UNLOCK")  # An empty label creates space
+        self.empty_space = customtkinter.CTkLabel(self, text="")#THIS FRAME IS LOCKED.\nSELECT A TARGET TO UNLOCK")  # An empty label creates space
         self.empty_space.grid(row=5, pady=(20, 5))  # Row 5 is a spacer
 
         # Button to confirm the selected target, positioned at the bottom
@@ -45,14 +45,14 @@ class LeftFrame(customtkinter.CTkFrame):
                                                      text="LAUNCH MISSION", 
                                                      fg_color="gray", 
                                                      #width=250,
-                                                     hover_color="darkgreen",
-                                                     command=self.launch_callback)
+                                                     hover_color="gray",
+                                                     command=self.launch_callback_deactive)
         self.bottom_button.grid(row=10, padx=30, pady=15, sticky="ew")  # Stick to bottom 
 
         # Lock the frame initially
         self.unlock = False  
         self.spinbox_1.entry.configure(state="disabled")
-        self.bottom_button.configure(state="disabled")
+        #self.bottom_button.configure(state="disabled")
         self.coordinate_box.configure(state="disabled")
 
     def unlock_frame(self):
@@ -65,12 +65,16 @@ class LeftFrame(customtkinter.CTkFrame):
 
             self.configure(fg_color="#2B2B2B")
             self.empty_space.configure(text="")  # Remove the text to make the row smaller
-            self.spinbox_1.entry.configure(state="normal")
-            self.bottom_button.configure(state="normal")
-            self.bottom_button.configure(fg_color="green")
             self.coordinate_box.configure(state="normal")
-            self.spinbox_1.subtract_button.configure(fg_color="green")
-            self.spinbox_1.add_button.configure(fg_color="green")
+            self.spinbox_1.entry.configure(state="normal")
+            self.spinbox_1.subtract_button.configure(fg_color="blue")
+            self.spinbox_1.subtract_button.configure(hover_color="darkblue")
+            self.spinbox_1.add_button.configure(fg_color="blue")
+            self.spinbox_1.add_button.configure(hover_color="darkblue")
+            self.bottom_button.configure(command=self.launch_callback)
+            self.bottom_button.configure(hover_color="darkblue")
+            #self.bottom_button.configure(state="normal")
+            self.bottom_button.configure(fg_color="blue")
 
         self.unlock = True
 
@@ -78,6 +82,11 @@ class LeftFrame(customtkinter.CTkFrame):
         """Update the coordinate box with the selected coordinates."""
         self.coordinate_box.delete(0, "end")
         self.coordinate_box.insert(0, f"({row}, {col})")
+
+    def launch_callback_deactive(self):
+        self.error_text = '''This option is blocked:\n
+        please select a target cell to unlock it'''
+        TopViewError(self.error_text)
 
     def launch_callback(self):
         # Catch the error if no target is selected
@@ -324,7 +333,8 @@ class FloatSpinbox(customtkinter.CTkFrame):
 
         self.subtract_button = customtkinter.CTkButton(self, text="-", width=height-6, height=height-6,
                                                        command=self.subtract_button_callback,
-                                                       fg_color="gray")
+                                                       fg_color="gray",
+                                                       hover_color="gray")  
         self.subtract_button.grid(row=0, column=0, padx=(3, 0), pady=3)
 
         self.entry = customtkinter.CTkEntry(self, width=width-(2*height), height=height-6, border_width=0, justify="center")
@@ -332,7 +342,8 @@ class FloatSpinbox(customtkinter.CTkFrame):
 
         self.add_button = customtkinter.CTkButton(self, text="+", width=height-6, height=height-6,
                                                   command=self.add_button_callback,
-                                                  fg_color="gray")
+                                                  fg_color="gray",
+                                                  hover_color="gray")
         self.add_button.grid(row=0, column=2, padx=(0, 3), pady=3)
 
         # default value

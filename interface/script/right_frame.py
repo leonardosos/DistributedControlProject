@@ -7,12 +7,13 @@ class RightFrame(customtkinter.CTkFrame):
         super().__init__(master)
         self.grid_columnconfigure(0, weight=1)  # Allow the frame to expand horizontally
 
-        self.text = '''Info cell\n(keep the cursor on the cell to know the info)'''
+        self.text = '''Cell Analysis\n
+        Select a cell by placing the cursor over it'''
         self.title = customtkinter.CTkLabel(self, text=self.text, corner_radius=6, width=250)
         self.title.grid(row=0, padx=10, pady=15, sticky="n")
 
         # Label for "Coordinate selected target"
-        self.coordinate_label = customtkinter.CTkLabel(self, text="Coordinate hovered", corner_radius=6)
+        self.coordinate_label = customtkinter.CTkLabel(self, text="Cell Coordinates", corner_radius=6)
         self.coordinate_label.grid(row=1, pady=(20, 5))
 
         # Coordinate entry box
@@ -20,7 +21,7 @@ class RightFrame(customtkinter.CTkFrame):
         self.coordinate_box.grid(row=2, padx=10)
 
         # Label for displaying the quantity 
-        self.value_label = customtkinter.CTkLabel(self, text="Quantity of garbage found:", corner_radius=6)
+        self.value_label = customtkinter.CTkLabel(self, text="Estimated garbage quantity:", corner_radius=6)
         self.value_label.grid(row=3, pady=(50, 5))
 
         self.vertical_progressbar = VerticalProgressBar(self)
@@ -56,8 +57,8 @@ class VerticalProgressBar(customtkinter.CTkFrame):
         self.progress_bar.grid(row=0, column=0, padx=10, pady=10)
         self.progress_bar.set(0)  # Initial progress value as 0%
 
-        # Label to display percentage (initially 0%)
-        self.value_label = customtkinter.CTkLabel(self, text="0%", width=width)
+        # Label to display percentage (initially)
+        self.value_label = customtkinter.CTkLabel(self, text="0 %", width=width)
         self.value_label.grid(row=1, column=0, pady=(10, 0))
 
     def set_progress(self, value):
@@ -69,4 +70,4 @@ class VerticalProgressBar(customtkinter.CTkFrame):
         if 0 <= value <= 100:
             percentage = value / 100.0  # Normalize the value for the progress bar (0 to 1).
             self.progress_bar.set(percentage)  # Update the visual progress bar.
-            self.value_label.configure(text=f"{int(value)}%")  # Update the label to show the percentage.
+            self.value_label.configure(text=f"{int(value)} %")  # Update the label to show the percentage.

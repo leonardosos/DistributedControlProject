@@ -39,7 +39,7 @@ class StatusFrame(customtkinter.CTkFrame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.label = customtkinter.CTkLabel(self, width=600 ,text="Mission:")
+        self.label = customtkinter.CTkLabel(self, width=600 ,text="Missions:")
         self.label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
         self.status_list = []

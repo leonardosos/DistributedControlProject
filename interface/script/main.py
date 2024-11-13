@@ -22,11 +22,11 @@ class App(customtkinter.CTk):
         self.grid_rowconfigure((0,1,2), weight=1)
 
         # Welcome Tab
-        self.welcome_tab = WelcomeTab(self)
+        ###############self.welcome_tab = WelcomeTab(self)
 
         self.count_mission = 0
         self.ongoing_mission = 0
-        self.vessel_available = 5
+        self.vessel_available = 15
         self.garbage_collected = 0
         self.mission_info = dict()
 

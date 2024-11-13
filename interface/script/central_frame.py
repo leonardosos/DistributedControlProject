@@ -141,7 +141,7 @@ class MatrixButton(customtkinter.CTkFrame):
         self.last_clicked_value = self.map_matrix[row][col]
 
         # Print and log the selected coordinates
-        text_ = f"Selected coordinates: ({row}, {col}), with {value} kg of garbage"
+        text_ = f"Selected coordinates: ({row}, {col}), with {value} % of garbage"
         self.master.master.button_frame.log_frame.add_text(text_)
         print(text_)
 
