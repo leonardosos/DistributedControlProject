@@ -1,4 +1,3 @@
-
 import customtkinter
 
 from left_frame import LeftFrame
@@ -16,13 +15,17 @@ class App(customtkinter.CTk):
         
         customtkinter.set_appearance_mode("dark")
         customtkinter.set_widget_scaling(1.1)  # widget dimensions and text size
-        self.attributes("-fullscreen", True)  # Start in full-screen mode
+
+        screen_width = self.winfo_screenwidth()
+        screen_height = self.winfo_screenheight()
+        self.geometry(f"{screen_width}x{screen_height}")
+        #self.attributes("-fullscreen",True)  # Start in full-screen mode if on LINUX
 
         self.grid_columnconfigure((0,1,2), weight=1)
         self.grid_rowconfigure((0,1,2), weight=1)
 
         # Welcome Tab
-        ###############self.welcome_tab = WelcomeTab(self)
+        self.welcome_tab = WelcomeTab(self)
 
         self.count_mission = 0
         self.ongoing_mission = 0

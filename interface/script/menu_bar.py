@@ -64,7 +64,7 @@ class TopView(customtkinter.CTkToplevel):
         self.columnconfigure(0, weight=1)
 
         # Buttons in the TopView
-        self.button1 = customtkinter.CTkButton(self, text="Button TODO")
+        self.button1 = customtkinter.CTkButton(self, text="Import mission", command=self.import_mission)
         self.button1.grid(row=0, padx=10, pady=(30,10))
 
         self.button2 = customtkinter.CTkButton(self, text="Export mission", command=self.export_mission)
@@ -83,4 +83,10 @@ class TopView(customtkinter.CTkToplevel):
 
         pprint.pprint(self.master.master.mission_info)
 
-        self.master.master.button_frame.log_frame.add_text("Missions data exported")
+        for key, value in self.master.master.mission_info.items():
+            text = f"{key}: {value}"
+            self.master.master.button_frame.log_frame.add_text(text)
+
+    def import_mission(self):
+        print("Importing missions...")
+        self.master.master.button_frame.log_frame.add_text("Importing missions data...")
