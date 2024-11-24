@@ -5,11 +5,17 @@ the menù button:
 	- the export is only print not stamped on file 
 	- find out other buttons function
 
-
 deselection target after a while 
 
 use mission coordinate for clean the target cell
 the color of target from uploding mission to end mission -> change on finish mission
 
-	NOW
+use systems suggestion for spinbox
 
+increse the font
+
+add a way to change the vessel aviable
+
+
+
+-- .log gitignore??

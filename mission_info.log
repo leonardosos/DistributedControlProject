@@ -1,0 +1,14 @@
+{
+    "1": {
+        "id": 1,
+        "coordinates": "(1, 0)",
+        "number_of_vessels": 1,
+        "value_of_map": 85
+    },
+    "2": {
+        "id": 2,
+        "coordinates": "(6, 1)",
+        "number_of_vessels": 1,
+        "value_of_map": 89
+    }
+}

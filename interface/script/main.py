@@ -1,5 +1,8 @@
+# import the necessary packages
 import customtkinter
+from matplotlib.pylab import f
 
+# Importing the components of the interface
 from left_frame import LeftFrame
 from central_frame import CentralFrame
 from right_frame import RightFrame
@@ -7,35 +10,41 @@ from welcome_tab import WelcomeTab
 from menu_bar import MenuBar
 from button_frame import ButtonFrame
 
+# Main class of the application
 class App(customtkinter.CTk):
     def __init__(self):
         super().__init__()
 
         self.title("Mission control")
         
-        customtkinter.set_appearance_mode("dark")
+        customtkinter.set_appearance_mode("dark") # Default dark mode
         customtkinter.set_widget_scaling(1.1)  # widget dimensions and text size
+        self.font_size = 16  # font size for the text
 
+        # Set the window size to screen dimensions
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         self.geometry(f"{screen_width}x{screen_height}")
-        #self.attributes("-fullscreen",True)  # Start in full-screen mode if on LINUX
+        #self.attributes("-fullscreen",True)  # if on LINUX set full screen mode
 
-        self.grid_columnconfigure((0,1,2), weight=1)
-        self.grid_rowconfigure((0,1,2), weight=1)
-
-        # Welcome Tab
-        self.welcome_tab = WelcomeTab(self)
-
+        # Variables to keep track of the mission
         self.count_mission = 0
         self.ongoing_mission = 0
         self.vessel_available = 10
         self.garbage_collected = 0
         self.mission_info = dict()
 
+        # Grid weight configuration for the main window, to make it a bit responsive
+        self.grid_columnconfigure((0,1,2), weight=1)
+        self.grid_rowconfigure((0,1,2), weight=1)
+
+        # Welcome Tab
+        self.welcome_tab = WelcomeTab(self.font_size)
+
         # Menu Bar
-        self.menu_bar = MenuBar(self)
+        self.menu_bar = MenuBar(self, self.font_size)
         self.menu_bar.grid(row=0, column=0, columnspan=3, sticky="new")
+        # Update the menu bar with the initial values
         self.menu_bar.update_vessel_availability(self.vessel_available)
         self.menu_bar.update_ongoing_mission(self.ongoing_mission)
         self.menu_bar.update_garbage(self.garbage_collected)
@@ -56,6 +65,7 @@ class App(customtkinter.CTk):
         self.button_frame = ButtonFrame(self)
         self.button_frame.grid(row=2, column=0, columnspan=3, padx = 0 , pady=(20,0), sticky="nsew")
 
+        # Write on the log frame the start of the mission
         self.button_frame.log_frame.add_text("Start mission controller")
 
 def main():
