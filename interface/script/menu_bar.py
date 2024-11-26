@@ -2,9 +2,7 @@
 from doctest import master
 
 import customtkinter 
-
 import json
-import pprint
 
 
 class MenuBar(customtkinter.CTkFrame):
@@ -13,13 +11,14 @@ class MenuBar(customtkinter.CTkFrame):
 
         # Set the font size for pass to the children widgets (topview menu setting)
         self.font_size = font_size
+        self.width_entry = int(font_size*4.3) # 70
 
         # Set weight for row and column
         self.rowconfigure(0, weight=1)      # keep the info counters on the right corner
         self.columnconfigure(2, weight=1)   # avoiding bar collapsing when resizing
 
         # Menu button
-        self.menu_button = customtkinter.CTkButton(self, height=font_size*2, width=100, font=(None, font_size) ,text="Menu", fg_color="#444444", command=self.open_menu_window_callback)
+        self.menu_button = customtkinter.CTkButton(self, height=font_size*2, width=font_size*6, font=(None, font_size) ,text="Menu", fg_color="#444444", command=self.open_menu_window_callback)
         self.menu_button.grid(row=0, column=0, padx=20, pady=10)
 
         # Vessel availability
@@ -27,7 +26,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.vessel_label = customtkinter.CTkLabel(self, height=font_size*2, font=(None, font_size) ,text="Vessel Available:")
         self.vessel_label.grid(row=0, column=2, pady=10, sticky="e")
         # Entry field
-        self.vessel_entry = customtkinter.CTkEntry(self, height=font_size*2, font=(None, font_size) ,width=70 ,justify="center")
+        self.vessel_entry = customtkinter.CTkEntry(self, height=font_size*2, font=(None, font_size) ,width=self.width_entry ,justify="center")
         self.vessel_entry.grid(row=0, column=3, padx=(5,50), pady=10, sticky="e")
         self.vessel_entry.insert(0, "--")  # Empty initial value
         self.vessel_entry.configure(state="readonly")
@@ -37,7 +36,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.mission_label = customtkinter.CTkLabel(self, height=font_size*2, font=(None, font_size), text="Ongoing Mission:")
         self.mission_label.grid(row=0, column=4, pady=10, sticky="e")
         # Entry field
-        self.mission_entry = customtkinter.CTkEntry(self, width=70, height=font_size*2, font=(None, font_size), justify="center")
+        self.mission_entry = customtkinter.CTkEntry(self, width=self.width_entry, height=font_size*2, font=(None, font_size), justify="center")
         self.mission_entry.grid(row=0, column=5, padx=(5,50), pady=10, sticky="e")
         self.mission_entry.insert(0, "# 0")  # Initial value
         self.mission_entry.configure(state="readonly")
@@ -47,7 +46,7 @@ class MenuBar(customtkinter.CTkFrame):
         self.garbage_label = customtkinter.CTkLabel(self, height=font_size*2, font=(None, font_size), text="Garbage collected:")
         self.garbage_label.grid(row=0, column=6, pady=10, sticky="e")
         # Entry field
-        self.garbage_entry = customtkinter.CTkEntry(self, width=70, height=font_size*2, font=(None, font_size), justify="center")
+        self.garbage_entry = customtkinter.CTkEntry(self, width=self.width_entry, height=font_size*2, font=(None, font_size), justify="center")
         self.garbage_entry.grid(row=0, column=7, padx=(5,20), pady=10, sticky="e")
         self.garbage_entry.insert(0, "0")  # Initial value
         self.garbage_entry.configure(state="readonly")
@@ -87,9 +86,8 @@ class MenuSettingTopView(customtkinter.CTkToplevel):
         self.geometry("400x300")
         self.title("Menu")
 
-        # Set weight for center alignment
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure(2, weight=1)
+        self.columnconfigure(0, weight=1)     # Set weight for center alignment
+        self.rowconfigure(2, weight=1)        # Set weight for spacing between buttons and last button
 
         # Buttons in the TopView
         self.button1 = customtkinter.CTkButton(self, text="Import mission", height=font_size*2, width=220 ,font=(None, font_size),command=self.import_mission)
@@ -113,14 +111,13 @@ class MenuSettingTopView(customtkinter.CTkToplevel):
         with open("mission_info.log", "w") as file:
             json.dump(self.master.master.mission_info, file, indent=4)
 
-        # Print the mission info to the console
-        pprint.pprint(self.master.master.mission_info)
-
-        # Print the mission info to the log frame
+        # Print the mission info to the log frame and console
         for key, value in self.master.master.mission_info.items():
             text = f"{key}: {value}"
+            print(text)  # Print also in the console
             self.master.master.button_frame.log_frame.add_text(text)
 
+    # Fake function to simulate the import mission
     def import_mission(self):
         print("Importing missions...")
         self.master.master.button_frame.log_frame.add_text("Importing missions data...")

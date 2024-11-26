@@ -18,8 +18,8 @@ class App(customtkinter.CTk):
         self.title("Mission control")
         
         customtkinter.set_appearance_mode("dark") # Default dark mode
-        customtkinter.set_widget_scaling(1.1)  # widget dimensions and text size
-        self.font_size = 16  # font size for the text
+        #customtkinter.set_widget_scaling(1.1)  # widget dimensions and text size
+        self.font_size = 20  # font size for the text
 
         # Set the window size to screen dimensions
         screen_width = self.winfo_screenwidth()
@@ -34,7 +34,7 @@ class App(customtkinter.CTk):
         self.garbage_collected = 0
         self.mission_info = dict()
 
-        # Grid weight configuration for the main window, to make it a bit responsive
+        # Grid weight configuration for the main window, to make it a bit responsive, basic configuration
         self.grid_columnconfigure((0,1,2), weight=1)
         self.grid_rowconfigure((0,1,2), weight=1)
 
@@ -48,6 +48,9 @@ class App(customtkinter.CTk):
         self.menu_bar.update_vessel_availability(self.vessel_available)
         self.menu_bar.update_ongoing_mission(self.ongoing_mission)
         self.menu_bar.update_garbage(self.garbage_collected)
+
+
+        # WORK IN PROGRESS
         
         # Left Frame 
         self.left_frame = LeftFrame(self)
@@ -62,7 +65,7 @@ class App(customtkinter.CTk):
         self.right_frame.grid(row=1, column=2, padx=(10,0), pady=10, sticky="nsew")
 
         # Button Frame
-        self.button_frame = ButtonFrame(self)
+        self.button_frame = ButtonFrame(self, self.font_size)
         self.button_frame.grid(row=2, column=0, columnspan=3, padx = 0 , pady=(20,0), sticky="nsew")
 
         # Write on the log frame the start of the mission
