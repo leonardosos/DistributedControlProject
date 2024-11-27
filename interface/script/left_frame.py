@@ -174,7 +174,7 @@ class LeftFrame(customtkinter.CTkFrame):
 
         # Create the mission data dictionary
         mission_data = {
-            "id": self.master.count_mission,
+            "id": self.master.count_mission, # same as the key in the mission_info dictionary
             "coordinates": coordinates,
             "number_of_vessels": number_of_vessels,
             "value_of_map": value_of_map,
@@ -280,7 +280,7 @@ class ProgressBar(customtkinter.CTkProgressBar):
             self.master.mission_data_updates()
 
             # Create status bar on bottom frame
-            self.master.master.button_frame.status_frame.add_status(f"Status {count_mission}", count_mission)
+            self.master.master.button_frame.status_frame.add_status(count_mission)
             print(f'A new mission has been added to the status list: {count_mission} with id {count_mission}')
 
             text_ = f'A new mission has been added to the status list: {count_mission} with id {count_mission}'
