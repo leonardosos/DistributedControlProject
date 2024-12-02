@@ -1,21 +1,32 @@
+'''
+This module contains the CentralFrame class, which is a custom tkinter frame that contains the MatrixButton class.
+
+
+
+'''
+
 import os
 import json
 import customtkinter
 
 class CentralFrame(customtkinter.CTkFrame):
-    """Central Frame that contain the frame matrix of buttons"""
+    """Central Frame that contain the frame matrix of buttons with the related padding"""
 
-    def __init__(self, master):
+    def __init__(self, master, font_size=16):
         super().__init__(master)
 
-        self.matrix_button = MatrixButton(self)
+        self.matrix_button = MatrixButton(self, font_size)
         self.matrix_button.grid(padx=10, pady=10)
+
 
 class MatrixButton(customtkinter.CTkFrame):
     """Frame containing a matrix of buttons."""
 
-    def __init__(self, master):
+    def __init__(self, master, font_size):
         super().__init__(master)
+
+        # Set the font size for the button funcionality
+        self.font_size = font_size
 
         # Load the map matrix from JSON
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -32,26 +43,36 @@ class MatrixButton(customtkinter.CTkFrame):
         self.create_matrix_of_buttons()
 
     def create_matrix_of_buttons(self):
+        """Create the matrix of buttons based on loaded data."""
+
+        # Find the dimensions of the matrix loaded
         rows = len(self.map_matrix)
         cols = len(self.map_matrix[0])
 
-        self.buttons = []  # Store buttons to access them for hover effect
+        # Store buttons to access them for hover effects
+        self.buttons = []  
 
         # Iterate through the matrix to create buttons
         for i in range(rows):
             row_buttons = []
             for j in range(cols):
+                
+                # FOR EACH BUTTON
+                # Retrieve the value from the matrix 
                 value = self.map_matrix[i][j]
+
+                # Map the value to a color 
                 bg_color = self.map_value_to_color(value)
 
-                # Create button without any text initially, and configure border and colors
+                # Create button 
                 button = customtkinter.CTkButton(self,
-                                                 text='',
+                                                 text='',  #f'{i},{j}', # Show the coordinates on the button
+                                                 font=(None, self.font_size),
                                                  border_width=1,
                                                  border_color="black",
                                                  command=lambda i_=i, j_=j: self.matrix_button_callback(i_, j_),
-                                                 width=60,
-                                                 height=60,
+                                                 width=70,  # Keep multiple of 10 otherwise apper a line between buttons
+                                                 height=70,  # Keep multiple of 10 otherwise apper a line between buttons
                                                  corner_radius=0,
                                                  fg_color=bg_color,
                                                  hover=False)
@@ -109,8 +130,8 @@ class MatrixButton(customtkinter.CTkFrame):
             self.hide_text_timer = None
 
     def map_value_to_color(self, value):
-        """Map matrix values to colors."""
-        # Return a color depending on the matrix value
+        """Return a color depending on the matrix value."""
+
         if value == 0:
             return "#4478C6"  # Blue for value 0
         else:
@@ -119,20 +140,21 @@ class MatrixButton(customtkinter.CTkFrame):
             return f"#{gray_value:02x}{gray_value:02x}{gray_value:02x}"
 
     def matrix_button_callback(self, row, col):
-        """Handle button click events."""
+        """Handle button click events. 
+        This update the left frame with the selected coordinates and value, and reset the previous button's appearance."""
 
+        # Unlock the left frame when a button is clicked
         self.master.master.left_frame.unlock_frame()
 
-        # If there is already a clicked button, reset it
+        # If there is already a clicked button, reset the previous button's appearance
         if self.last_clicked_button:
             last_row, last_col = self.last_clicked_button.grid_info()["row"], self.last_clicked_button.grid_info()["column"]
             original_color = self.map_value_to_color(self.map_matrix[last_row][last_col])
             self.last_clicked_button.configure(text='', fg_color=original_color)
 
-        value = self.map_matrix[row][col]
-
         # Show the value and change background to red on the clicked button
         target_button = self.grid_slaves(row=row, column=col)[0]
+        value = self.map_matrix[row][col]
         target_button.configure(text=str(value), fg_color="red")  # Red for selected state
 
         # Keep track of the currently clicked button
@@ -145,9 +167,15 @@ class MatrixButton(customtkinter.CTkFrame):
         self.master.master.button_frame.log_frame.add_text(text_)
         print(text_)
 
-
         # Update the coordinate box in the left frame
         self.master.master.left_frame.update_coordinate_box(row, col)
+
+        # Update the spinbox in the left frame with the adviced value of vessel
+        self.master.master.left_frame.update_spinbox_vessel_counter()
+
+        # Update the advice box in the right frame with the adviced value of vessel
+        self.master.master.left_frame.advice_box.delete(0, "end")
+        self.master.master.left_frame.advice_box.insert(0, f"{value//20}")
         
     def clean_button(self, row, col):
         """Clean the button by setting its value to 0 and changing its color to the default blue."""
@@ -158,7 +186,8 @@ class MatrixButton(customtkinter.CTkFrame):
         button = self.grid_slaves(row=row, column=col)[0]
 
         # Update the button's appearance
-        button.configure(text='', fg_color="#4478C6")  # Blue for value 0
+        button.configure(text='')  # Remove the text
+        button.configure(fg_color="#4478C6")  # Blue for value 0
 
         # Reset tracking variables and cancel any pending hover timeout
         if button == self.current_hovered_button:
@@ -176,3 +205,14 @@ class MatrixButton(customtkinter.CTkFrame):
         text_ = f"Updated matrix value at ({row}, {col}): {self.map_matrix[row][col]} after cleaning"
         self.master.master.button_frame.log_frame.add_text(text_)
         print(text_)
+
+
+# Test the central frame class
+if __name__ == "__main__":
+    app = customtkinter.CTk()
+    central_frame = CentralFrame(app)
+
+    central_frame.grid(row=1, column=1, padx=10, pady=10)
+
+
+    app.mainloop()

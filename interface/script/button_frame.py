@@ -1,3 +1,11 @@
+'''
+This module contains the ButtonFrame class that contains the log and mission status.
+The log frame is a text box that can be updated with new lines of text.
+The status frame contains the mission status, which is a progress bar for each mission.
+
+The only measure fixed are: height of entry box of log and width of missions frame. 
+'''
+
 # import doctest to test the functions standalone
 from doctest import master
 from tkinter import font
@@ -24,7 +32,8 @@ class ButtonFrame(customtkinter.CTkFrame):
 
         # Set the weight for the row and column basic configuration
         self.grid_rowconfigure(0, weight=1)
-        self.grid_columnconfigure((0,1,2), weight=1)
+        self.grid_columnconfigure((0,1), weight=1)
+        self.grid_columnconfigure(2, weight=0)
 
 class LogFrame(customtkinter.CTkFrame):
     """Log entry box with own add method"""
@@ -36,7 +45,7 @@ class LogFrame(customtkinter.CTkFrame):
         self.label.grid(row=0, column=0, padx=10, pady=10, sticky="nw")
 
         # Text box
-        self.text_box = customtkinter.CTkTextbox(self, width=1000, height=200 , border_width=1, border_color="black", font=(None, font_size))
+        self.text_box = customtkinter.CTkTextbox(self, height=120, border_width=1, border_color="black", font=(None, font_size))
         self.text_box.grid(row=1, column=0, padx=10, pady=(0,10), sticky="nsew")
         self.text_box.configure(state="disabled")
 
@@ -53,34 +62,52 @@ class LogFrame(customtkinter.CTkFrame):
 class StatusFrame(customtkinter.CTkScrollableFrame):
     """Frame that contains the mission status"""
     def __init__(self, master, font_size=16):
-        super().__init__(master, width=500)
+        super().__init__(master, width=600)
 
         # hack to ordinate the mission status
-        self.counter = 10 
+        self.mission_order_counter = 10 
 
         # Set the font size for pass to the children widgets
         self.font_size = font_size
 
         # Label
-        self.label = customtkinter.CTkLabel(self, width=600 ,text="Missions:", font=(None, font_size))
+        self.label = customtkinter.CTkLabel(self,text="Missions:", font=(None, font_size))
         self.label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
-
 
     def add_status(self, id_mission, max_time=10000, update_interval=50):
         """ Add a status progress bar to the status frame """
+
+        self.grid_columnconfigure(0, weight=1)
         
         # Create a frame to hold the label and progress bar
         single_mission_frame = SingleMissionFrame(self, id_mission, max_time, update_interval, self.font_size)
-        single_mission_frame.grid(row = self.counter ,padx=10, pady=5)
+        single_mission_frame.grid(row = self.mission_order_counter ,padx=10, pady=5)
 
         # Increase the counter for display the mission status in the correct order
-        self.counter -= 1
+        self.mission_order_counter -= 1
+
+        # Call the initial_refresh_counter method
+        self.initial_refresh_counter(id_mission)
 
         # Start and update the progress bar asynchonously
-        single_mission_frame.start_progress() # at the end of the progression, call the refresh_counter method
+        single_mission_frame.start_progress() # at the end of the progression, call the final_refresh_counter method
 
-    def refresh_counter(self, frame_bar, id_mission):
-        """Refresh the interface counter using the info from mission_info"""
+    def initial_refresh_counter(self, id_mission):
+        """Refresh the interface counter using the info from mission_info dictionary at the start of the mission""" 
+
+        # Define the main master -> app of main.py
+        main_master = self.master.master.master.master
+
+        # Decrese the ongoing mission and update menu bar
+        main_master.ongoing_mission += 1
+        main_master.menu_bar.update_ongoing_mission(main_master.ongoing_mission)
+        
+        # Update vessel availability
+        main_master.vessel_available -= main_master.mission_info[id_mission]["number_of_vessels"]
+        main_master.menu_bar.update_vessel_availability(main_master.vessel_available)
+
+    def final_refresh_counter(self, id_mission):
+        """Refresh the interface counter using the info from mission_info dictionary at the end of the mission""" 
 
         # Define the main master -> app of main.py
         main_master = self.master.master.master.master
@@ -121,7 +148,7 @@ class SingleMissionFrame(customtkinter.CTkFrame):
 
         # Add the progress bar to the frame
         self.mission_progress_bar = MissionProgressBar(self, 
-                                                       id_mission, 
+                                                       id_mission=id_mission, 
                                                        max_time=max_time, 
                                                        update_interval=update_interval, 
                                                        callback=self.end_progress)
@@ -146,7 +173,6 @@ class SingleMissionFrame(customtkinter.CTkFrame):
         for key, value in info.items():
             info_text += f"{key}: {value}\n"
 
-
         top_view_info = TopViewInfo(f"Mission {self.id_mission} info", info_text, font_size=self.font_size)
 
 
@@ -161,23 +187,23 @@ class SingleMissionFrame(customtkinter.CTkFrame):
         self.mission_progress_bar.update_progress()
 
     def end_progress(self):
-        """At the End of the progress bar call the refresh_counter method"""
+        """At the End of the progress bar call the final_refresh_counter method"""
 
         # log the end of the mission
         text_ = f"Mission #{self.id_mission} completed"
         self.master.master.master.master.log_frame.add_text(text_)
         print(text_)
 
-        # Call the refresh_counter method
-        self.master.refresh_counter(self, self.mission_progress_bar.id_mission)
+        # Call the final_refresh_counter method
+        self.master.final_refresh_counter(self.mission_progress_bar.id_mission)
 
     
 class MissionProgressBar(customtkinter.CTkProgressBar):
     """Custom progress bar for the mission status"""
-    def __init__(self, master, id_mission, max_time, update_interval, callback):
-        super().__init__(master ,height=25, corner_radius=12, progress_color="green", border_color="black")
+    def __init__(self, master, id_mission, max_time, update_interval, callback, width=None):
+        super().__init__(master , width= width, height=25, corner_radius=12, progress_color="green", border_color="black")
         # Set the variables
-        self.progress = 0
+        self.progress_bar = 0
         self.max_time = max_time
         self.update_interval = update_interval
         self.callback = callback
@@ -191,11 +217,11 @@ class MissionProgressBar(customtkinter.CTkProgressBar):
 
     def update_progress(self):
         """Update the progress bar and the color based on the progress."""
-        if self.progress < 1: 
-            self.progress += self.update_interval / self.max_time
+        if self.progress_bar < 0.99: 
+            self.progress_bar += self.update_interval / self.max_time
 
-            self.set(self.progress) # Update the progress bar
-            self.change_color_based_on_progress(self.progress * 100) # Dynamically calculate the color based on the progress percentage
+            self.set(self.progress_bar) # Update the progress bar
+            self.change_color_based_on_progress(self.progress_bar * 100) # Dynamically calculate the color based on the progress percentage
 
             # Schedule the next update and call the update_progress function recursively
             self.after(self.update_interval, self.update_progress)

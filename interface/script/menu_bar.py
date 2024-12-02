@@ -1,3 +1,12 @@
+'''
+This script contains the MenuBar class that is used to create the menu bar in the main window.
+The MenuBar class contains the following widgets:
+- Menu button: used to open the menu settings window such as import/export mission
+- Vessel availability: shows the number of available vessels
+- Ongoing mission: shows the number of the ongoing mission
+- Garbage status: shows the amount of garbage collected
+'''
+
 # import doctest to test the functions standalone
 from doctest import master
 
@@ -115,7 +124,7 @@ class MenuSettingTopView(customtkinter.CTkToplevel):
         for key, value in self.master.master.mission_info.items():
             text = f"{key}: {value}"
             print(text)  # Print also in the console
-            self.master.master.button_frame.log_frame.add_text(text)
+            self.master.master.button_frame.log_frame.add_text(f"The following data are exported: {text}")
 
     # Fake function to simulate the import mission
     def import_mission(self):

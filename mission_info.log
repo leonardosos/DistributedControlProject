@@ -2,13 +2,43 @@
     "1": {
         "id": 1,
         "coordinates": "(1, 0)",
-        "number_of_vessels": 1,
+        "number_of_vessels": 4,
         "value_of_map": 85
     },
     "2": {
         "id": 2,
         "coordinates": "(6, 1)",
+        "number_of_vessels": 4,
+        "value_of_map": 89
+    },
+    "3": {
+        "id": 3,
+        "coordinates": "(6, 7)",
+        "number_of_vessels": 3,
+        "value_of_map": 71
+    },
+    "4": {
+        "id": 4,
+        "coordinates": "(6, 1)",
         "number_of_vessels": 1,
         "value_of_map": 89
+    },
+    "5": {
+        "id": 5,
+        "coordinates": "(7, 8)",
+        "number_of_vessels": 2,
+        "value_of_map": 44
+    },
+    "6": {
+        "id": 6,
+        "coordinates": "(8, 7)",
+        "number_of_vessels": 3,
+        "value_of_map": 72
+    },
+    "7": {
+        "id": 7,
+        "coordinates": "(7, 8)",
+        "number_of_vessels": 2,
+        "value_of_map": 44
     }
 }
