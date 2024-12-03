@@ -1,14 +1,40 @@
 '''
-This module contains the LeftFrame class, which is a custom tkinter frame that contains the settings for the mission profile.
+This module contains the LeftFrame class, it used to set the mission parameters and launch the mission.
 
+Initially, the frame is locked and the user can't interact with the widgets. After selecting a target cell on the map,
+the frame is unlocked and the user can set the number of boats involved in the mission and launch the mission.
 
+The LeftFrame contains:
+- a coordinate label and entry box to display the selected coordinates,
+- a spinbox to select the number of boats involved in the mission,
+- a label to display the suggested number of vessels for optimal cleaning of the area,
+- a button to launch the mission.
+when the frame is locked, it also contains:
+- a tutorial info label to display the instructions to unlock the frame.
 
-The width of first label is fixed and is equal to the width of right_frame in order to have a simmetry.
+The callback of button Launch (with frame unlocked):
+- handles and notify user wrong use cases (no target selected, target is a mission on going, no number of boats selected, too many boats requested, value of map is negative or 0),
+- saves the mission data to the mission info dictionary, 
+- creates a label with a related progress bar to display the uploading data status (then remove it),
 
+At the end of the progress bar data uploading, with the end progress callback:
+- call: adds the mission to the mission frame (in charge to update the interface counter),
+- call: color_mission_in_progress in charge to handle the button color and value for
+        the on going status on the cell map,
+- updates the number of boat counter on the spinbox,
+
+The launch button is tracked to avoid multiple lanches of the same mission or other missions while the data is in uplading status.
+
+When a button is selected on the map, the central frame call the LeftFrame methods that:
+- updated the coordinate box with the selected coordinates,
+- the number of vessels, on the spinbox, is updated based on the available vessels and the value of the map at the selected coordinates
+- the advice box is updated with the suggested number of vessels for optimal cleaning of the area.
+
+The width of first label is fixed and is equal to the right_frame width for guarantet simmetry. 
 '''
 
 import customtkinter
-from button_frame import MissionProgressBar
+from button_frame import MissionProgressBar   # Import the progress bar class
 
 
 class LeftFrame(customtkinter.CTkFrame):

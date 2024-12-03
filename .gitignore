@@ -1,4 +1,4 @@
-.vscode
-.venv
-__pycache__
-.log
+.vscode/
+.venv/
+__pycache__/
+mission_info.log

@@ -1,14 +1,18 @@
 '''
-This script contains the MenuBar class that is used to create the menu bar in the main window.
+This module contains the MenuBar class that is used to create the (upper) menu bar in the main window.
+
 The MenuBar class contains the following widgets:
 - Menu button: used to open the menu settings window such as import/export mission
 - Vessel availability: shows the number of available vessels
 - Ongoing mission: shows the number of the ongoing mission
 - Garbage status: shows the amount of garbage collected
-'''
 
-# import doctest to test the functions standalone
-from doctest import master
+The MenuBar class also contains the related methods to update the values of the widgets.
+
+The menu button opens the MenuSettingTopView window, which contains the following buttons:
+- Import mission: used to import the mission data (fake function)
+- Export mission: used to export the mission data on a file
+'''
 
 import customtkinter 
 import json

@@ -1,13 +1,14 @@
 '''
 This module contains the RightFrame class, which is a custom tkinter frame that displays information about the hovered cell.
+
 The RightFrame class contains:
 - a coordinate label and entry box to display the hover cell's coordinates,
-- a value label to display the estimated garbage quantity in the hover cell,
-- a vertical progress bar to visually represent the garbage quantity,
+- a value label and progress bar for display the estimated garbage quantity in the hover cell,
 - an advice label and entry box to suggest the number of vessels needed for optimal cleaning.
 
-The width of first label is fixed and is equal to the width of right_frame in order to have a simmetry.
+Each widget has a update method to update its value based on the hovered cell's data. 
 
+The width of first label is fixed and is equal to the width of right_frame in order to have a simmetry.
 '''
 
 import customtkinter

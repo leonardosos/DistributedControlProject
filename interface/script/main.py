@@ -1,7 +1,14 @@
 '''
-Main file of the application, it creates the main window and the main components of the interface, importing the necessary classes from the other files. 
+Main file of the application, it creates the main window and the main components of the interface, 
+importing the necessary classes from the other files. It also contains the main class of the application, App.
 
-It also contains the main class of the application, App, which inherits from customtkinter.CTk, the custom tkinter class.
+There are two interface setting:
+- font_size: size of the font for the interface
+- side_panel_width: width of the side panels of the interface
+
+There are also some variables to keep track of the mission and a mission_info dictionary with the information of the mission.
+
+There is a variable to (hard code) set for define the vessel available.
 '''
 
 # import the necessary packages
@@ -47,7 +54,7 @@ class App(customtkinter.CTk):
 
         # INTERFACE COMPONENTS
         # Welcome Tab
-        ##self.welcome_tab = WelcomeTab(self.font_size)
+        self.welcome_tab = WelcomeTab(self.font_size)
 
         # Menu Bar
         self.menu_bar = MenuBar(self, self.font_size)

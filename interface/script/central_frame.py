@@ -1,14 +1,34 @@
 '''
 This module contains the CentralFrame class, which is a custom tkinter frame that contains the MatrixButton class.
 
+From map_generator/map.json, the CentralFrame class loads the map matrix and creates a matrix of buttons 
+colored based on the values in the matrix. 
 
+The hover effect is implemented, when the mouse enters:
+- Show the value of the button.
+- Hide the value after a delay.
+- Update the right frame with the hovered coordinates and value with right_frame.py methods (look at right_frame.py).
 
+The matrix button click callback: 
+- Colors the clicked button red and shows the value.
+- Updates the left frame with LeftFrame methods (look at left_frame.py).
+If left frame is lock (No button has been clicked yet), the matrix button click callback will unlock the left frame.
+
+There is two function for handle the "cleaning" of the button and for the button on the mission in progress.
+- The function clean_button: set the value of the button to 0 and change the color to the default blue.
+- The function color_mission_in_progress: set the value of the button to -1 and change the color to yellow.
+ 
+In the file the -1 value is used to represent a mission in progress so it is handled differently from the other values.
+
+Color map legend: 
+- Blue color is used for value 0, 
+- Grayscale for other values, 
+- Yellow for mission in progress (-1).
+- Red color is used for the selected state.
 '''
 
-from math import e
 import os
 import json
-from turtle import color
 import customtkinter
 import ast # To convert string to tuple
 

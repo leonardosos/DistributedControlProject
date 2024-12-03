@@ -1,21 +1,28 @@
 '''
-This module contains the ButtonFrame class that contains the log and mission status.
-The log frame is a text box that can be updated with new lines of text.
-The status frame contains the mission status, which is a progress bar for each mission.
+This module contains the ButtonFrame class that contains:
+- LogFrame: a frame that contains a text box that can be updated with new lines of text with a related function. 
+- StatusFrame: a frame that contains the list of the mission and a button to clear the completed missions.
 
-The only measure fixed are: height of entry box of log and width of missions frame. 
+The status frame initially empty, can be filled with the add_status method that creates 
+a new SingleMissionFrame object, add it to the status frame and start the progress bar. 
+
+The SingleMissionFrame object contains a label with the mission number, a progress bar and an info button.
+
+At the start of the mission, the initial_refresh_counter method is called to update the ongoing mission and the vessel availability.
+At the end of the mission:
+ - the final_refresh_counter method is called to update the ongoing mission, the garbage collected, the vessel availability and the status of the mission.
+ - matrix_button.clean_button method is called to clean the button value and color in the central frame matrix.
+
+The fixed interface size are: 
+- height of entry box of log 
+- width of missions frame. 
+- width of label mission progress bar
+
+The progress bar is a custom progress bar that changes color based on the progress percentage and 
+it is more general possible due to the use on left frame for the data upload.
 '''
 
-# import doctest to test the functions standalone
-from ctypes import alignment
-from doctest import master
-from operator import le
-import stat
-from tkinter import font
-
-
 import customtkinter
-
 
 class ButtonFrame(customtkinter.CTkFrame):
     """Button frame that contain log and mission status"""
@@ -342,8 +349,5 @@ if __name__ == "__main__":
 
     # test the add_text method
     menu.log_frame.add_text("TEST mission controller")
-
-    # test the add_status method
-    menu.status_frame.add_status(1, 10000, 50)
 
     app.mainloop() 
