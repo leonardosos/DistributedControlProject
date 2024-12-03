@@ -9,7 +9,6 @@ The width of first label is fixed and is equal to the width of right_frame in or
 
 import customtkinter
 from button_frame import MissionProgressBar
-import ast # To convert string to tuple
 
 
 class LeftFrame(customtkinter.CTkFrame):
@@ -125,63 +124,75 @@ class LeftFrame(customtkinter.CTkFrame):
         try:
             # Check if the last clicked button has a value of garbage
             if self.master.central_frame.matrix_button.last_clicked_value:
-                # Check if the number of boats is selected
-                if int(self.spinbox_1.get_spin_value()) != 0:
-                    # Check if the uploading process is already in progress
-                    if not self.launch_already_pressed:
+                # Check if the last clicked button is a mission on going
+                if self.master.central_frame.matrix_button.last_clicked_value > 0:
+                    # Check if the number of boats is selected
+                    if int(self.spinbox_1.get_spin_value()) != 0:
+                        # Check if the uploading process is already in progress
+                        if not self.launch_already_pressed:
 
-                        # log and print the button launch pressed
-                        print("Button launch pressed")
-                        text_ = "Button launch pressed"
+                            # log and print the button launch pressed
+                            print("Button launch pressed")
+                            text_ = "Button launch pressed"
+                            self.master.button_frame.log_frame.add_text(text_)
+                            
+                            print(f'DEBUG {self.master.count_mission} missions launched')
+
+                            # GET SELECTED INFO
+                            # Get the current mission ID
+                            self.master.count_mission += 1
+                            self.id_mission = self.master.count_mission
+                            # Get the selected coordinates
+                            self.coordinates = self.coordinate_box.get()
+                            # Get the number of vessels
+                            self.number_of_vessels = int(self.spinbox_1.get_spin_value())
+                            # Get the value of the map at the selected coordinates
+                            self.value_of_map = self.master.central_frame.matrix_button.last_clicked_value
+
+                            print(f"DEBUG: Mission ID: {self.id_mission}")
+
+                            # Save the mission data
+                            self.save_mission_data(id_mission=self.id_mission, 
+                                                coordinates=self.coordinates,
+                                                number_of_vessels=self.number_of_vessels,
+                                                value_of_map=self.value_of_map)
+
+
+                            # Create a label to display the upload status
+                            self.upload_status = customtkinter.CTkLabel(self, text="Uploading data...", font=(None, self.font_size), corner_radius=6)
+                            self.upload_status.grid(row=8, pady=(0, self.label_box_space))  # Rewrite the tutorial info
+                            # Create a progress bar
+                            self.progress_bar = MissionProgressBar(self,
+                                                                id_mission=self.id_mission,
+                                                                max_time=4000,
+                                                                update_interval=50,
+                                                                callback=self.end_progress,
+                                                                width=150)
+                            self.progress_bar.grid(row=9, pady=(0, self.inter_widget_space))
+
+                            # Start the progression bar and call the callback at the end
+                            self.progress_bar.update_progress()
+
+                            # Set the uploading data flag to prevent multiple uploads
+                            self.launch_already_pressed = True
+
+
+            # HANDLE ERRORS
+                    else:
+                        # log and print the error message
+                        print("You can't launch mission without select the number of boat")
+                        text_ = "You can't launch mission without select the number of boat"
                         self.master.button_frame.log_frame.add_text(text_)
-                        
-                        print(f'DEBUG {self.master.count_mission} missions launched')
-
-                        # GET SELECTED INFO
-                        # Get the current mission ID
-                        self.master.count_mission += 1
-                        self.id_mission = self.master.count_mission
-                        # Get the selected coordinates
-                        self.coordinates = self.coordinate_box.get()
-                        # Get the number of vessels
-                        self.number_of_vessels = int(self.spinbox_1.get_spin_value())
-                        # Get the value of the map at the selected coordinates
-                        self.value_of_map = self.master.central_frame.matrix_button.last_clicked_value
-
-                        print(f"DEBUG: Mission ID: {self.id_mission}")
-
-                        # Save the mission data
-                        self.save_mission_data(id_mission=self.id_mission, 
-                                               coordinates=self.coordinates,
-                                               number_of_vessels=self.number_of_vessels,
-                                               value_of_map=self.value_of_map)
-
-
-                        # Create a label to display the upload status
-                        self.upload_status = customtkinter.CTkLabel(self, text="Uploading data...", font=(None, self.font_size), corner_radius=6)
-                        self.upload_status.grid(row=8, pady=(0, self.label_box_space))  # Rewrite the tutorial info
-                        # Create a progress bar
-                        self.progress_bar = MissionProgressBar(self,
-                                                               id_mission=self.id_mission,
-                                                               max_time=4000,
-                                                               update_interval=50,
-                                                               callback=self.end_progress,
-                                                               width=150)
-                        self.progress_bar.grid(row=9, pady=(0, self.inter_widget_space))
-
-                        # Start the progression bar and call the callback at the end
-                        self.progress_bar.update_progress()
-
-                        # Set the uploading data flag to prevent multiple uploads
-                        self.launch_already_pressed = True
-
-
-        # HANDLE ERRORS
                 else:
+                    # popup an error message if the target is a mission on going
+                    self.text = "The mission target is not valid!\n\nThis is a mission on going\n\nPlease select a valid target before launching the mission."
+                    # Puopup an error message if no target is selected
+                    TopViewError(self.text, self.font_size)
+
                     # log and print the error message
-                    print("You can't launch mission without select the number of boat")
-                    text_ = "You can't launch mission without select the number of boat"
-                    self.master.button_frame.log_frame.add_text(text_)
+                    self.text = "The mission target is already a mission! Please select a valid target before launching the mission."
+                    print(self.text)
+                    self.master.button_frame.log_frame.add_text(self.text)
             else:
                 # popup an error message if no target is selected
                 self.text = "The mission target is empty!\n\nPlease select a valid target before launching the mission."
@@ -224,8 +235,9 @@ class LeftFrame(customtkinter.CTkFrame):
         self.after(5000, self.upload_status.destroy)
         self.after(5000, self.progress_bar.destroy)
 
-        # Clean the value and color on cell (on the matrix map) after a delay
-        self.clean_last_mission_cell(self.id_mission)
+        # Set the color of the cell to the mission in progress color
+        #self.master.central_frame.matrix_button.clean_button(self.id_mission)
+        self.master.central_frame.matrix_button.color_mission_in_progress(self.id_mission)
 
         # Reset the launch button state
         self.launch_already_pressed = False
@@ -233,10 +245,15 @@ class LeftFrame(customtkinter.CTkFrame):
     def update_spinbox_vessel_counter(self):
         '''Update the number of boat counter on the spinbox, using the available vessels and adviced number of vessels'''
         
+        #print(f"DEBUG: last clicked {self.master.central_frame.matrix_button.last_clicked_value}")
+        #print(f"DEBUG: last clicked//20 {self.master.central_frame.matrix_button.last_clicked_value//20}")
+
         if self.master.vessel_available == 0:
             self.spinbox_1.set(0)
-        elif self.master.vessel_available >= self.master.central_frame.matrix_button.last_clicked_value//20:
+        elif self.master.vessel_available >= self.master.central_frame.matrix_button.last_clicked_value//20 and self.master.central_frame.matrix_button.last_clicked_value >0:
             self.spinbox_1.set(self.master.central_frame.matrix_button.last_clicked_value//20)
+        elif self.master.central_frame.matrix_button.last_clicked_value <0:
+            self.spinbox_1.set(0)
         else:
             self.spinbox_1.set(1)
 
@@ -249,23 +266,13 @@ class LeftFrame(customtkinter.CTkFrame):
             "coordinates": coordinates,
             "number_of_vessels": number_of_vessels,
             "value_of_map": value_of_map,
+            "status": "ongoing"
         }
 
         # Save the mission data to the mission info dictionary
         self.master.mission_info[id_mission] = mission_data
 
         print(f"Mission data saved: {self.master.mission_info[id_mission]}")  
-
-
-
-    def clean_last_mission_cell(self, id_mission):
-        """Clean the last clicked button after a delay."""
-        
-        coordinates_tuple = ast.literal_eval(self.master.mission_info[id_mission]["coordinates"])
-        
-        self.master.central_frame.matrix_button.clean_button(coordinates_tuple[0], coordinates_tuple[1])
-            
-
    
 class FloatSpinbox(customtkinter.CTkFrame):
     """Spinbox class with buttons to increase and decrease the value"""

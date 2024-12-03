@@ -65,12 +65,20 @@ class RightFrame(customtkinter.CTkFrame):
         self.coordinate_box.delete(0, "end")
         self.coordinate_box.insert(0, f"({row}, {col})")
 
-        # Update the value box with the advised number of vessels
-        self.advice_box.delete(0, "end")
-        self.advice_box.insert(0, f"{value//20}")
+        if value >= 0:
+            # Update the value box with the advised number of vessels
+            self.advice_box.delete(0, "end")
+            self.advice_box.insert(0, f"{value//20}")
 
-        # Update the vertical progress bar with the hovered cell's value
-        self.vertical_progressbar.set_progress(value)
+            # Update the vertical progress bar with the hovered cell's value
+            self.vertical_progressbar.set_progress(value)
+        else:
+            # Update the value box with the advised number of vessels
+            self.advice_box.delete(0, "end")
+            self.advice_box.insert(0, "0")
+
+            # Update the vertical progress bar with the hovered cell's value
+            self.vertical_progressbar.set_progress(0)
 
 
 

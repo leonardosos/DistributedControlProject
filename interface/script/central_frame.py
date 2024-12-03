@@ -5,9 +5,13 @@ This module contains the CentralFrame class, which is a custom tkinter frame tha
 
 '''
 
+from math import e
 import os
 import json
+from turtle import color
 import customtkinter
+import ast # To convert string to tuple
+
 
 class CentralFrame(customtkinter.CTkFrame):
     """Central Frame that contain the frame matrix of buttons with the related padding"""
@@ -96,7 +100,10 @@ class MatrixButton(customtkinter.CTkFrame):
             self.hide_value(self.current_hovered_button)
 
         # Show the value for the currently hovered button
-        button.configure(text=str(value), fg_color="#00008B")  # Dark Blue for hovering
+        if value >= 0:
+            button.configure(text=str(value), fg_color="#00008B")  # Dark Blue for hovering
+        else:
+            button.configure(text="ON", fg_color="#00008B")  # mission in progress
 
         # Update the right frame with the hovered coordinates and value
         row, col = button.grid_info()["row"], button.grid_info()["column"]
@@ -116,7 +123,10 @@ class MatrixButton(customtkinter.CTkFrame):
         """Hide the value on the button after timeout or hover loss."""
         # Don't hide the value if the button is the one currently selected/clicked
         if button == self.last_clicked_button:
-            button.configure(text=str(self.last_clicked_value), fg_color="red")
+            if self.last_clicked_value >= 0:
+                button.configure(text=str(self.last_clicked_value), fg_color="red")
+            else:
+                button.configure(text="ON", fg_color="red")
             return
 
         # Reset value and background color when the hover ends or timeout happens
@@ -134,6 +144,8 @@ class MatrixButton(customtkinter.CTkFrame):
 
         if value == 0:
             return "#4478C6"  # Blue for value 0
+        elif value == -1:
+            return "yellow"
         else:
             # Convert value into grayscale, where higher values are darker
             gray_value = int(255 - (value / 100) * 255)
@@ -155,7 +167,10 @@ class MatrixButton(customtkinter.CTkFrame):
         # Show the value and change background to red on the clicked button
         target_button = self.grid_slaves(row=row, column=col)[0]
         value = self.map_matrix[row][col]
-        target_button.configure(text=str(value), fg_color="red")  # Red for selected state
+        if value >= 0:
+            target_button.configure(text=str(value), fg_color="red")  # Red for selected state
+        else:
+            target_button.configure(text="ON", fg_color="red")  # mission in progress
 
         # Keep track of the currently clicked button
         self.last_clicked_button = target_button
@@ -163,9 +178,14 @@ class MatrixButton(customtkinter.CTkFrame):
         self.last_clicked_value = self.map_matrix[row][col]
 
         # Print and log the selected coordinates
-        text_ = f"Selected coordinates: ({row}, {col}), with {value} % of garbage"
-        self.master.master.button_frame.log_frame.add_text(text_)
-        print(text_)
+        if value >= 0:
+            text_ = f"Selected coordinates: ({row}, {col}), with {value} % of garbage"
+            self.master.master.button_frame.log_frame.add_text(text_)
+            print(text_)
+        else:
+            text_ = f"Selected coordinates: ({row}, {col}) is a mission in progress"
+            self.master.master.button_frame.log_frame.add_text(text_)
+            print(text_)
 
         # Update the coordinate box in the left frame
         self.master.master.left_frame.update_coordinate_box(row, col)
@@ -175,10 +195,17 @@ class MatrixButton(customtkinter.CTkFrame):
 
         # Update the advice box in the right frame with the adviced value of vessel
         self.master.master.left_frame.advice_box.delete(0, "end")
-        self.master.master.left_frame.advice_box.insert(0, f"{value//20}")
+        if value >= 0:
+            self.master.master.left_frame.advice_box.insert(0, f"{value//20}")
+        else:          
+            self.master.master.left_frame.advice_box.insert(0, "0")
         
-    def clean_button(self, row, col):
+    def clean_button(self, id_mission):
         """Clean the button by setting its value to 0 and changing its color to the default blue."""
+        
+        coordinates_tuple = ast.literal_eval(self.master.master.mission_info[id_mission]["coordinates"])        
+        row,col = coordinates_tuple[0], coordinates_tuple[1]
+
         # Update the map matrix to set the value to 0
         self.map_matrix[row][col] = 0
 
@@ -206,6 +233,33 @@ class MatrixButton(customtkinter.CTkFrame):
         self.master.master.button_frame.log_frame.add_text(text_)
         print(text_)
 
+    def color_mission_in_progress(self, id_mission):
+        """Color the button by setting its value to -1 and changing its color to yellow."""
+
+        coordinates_tuple = ast.literal_eval(self.master.master.mission_info[id_mission]["coordinates"])        
+        row,col = coordinates_tuple[0], coordinates_tuple[1]
+
+        # Update the map matrix to set the value to 0
+        self.map_matrix[row][col] = -1
+
+        # Get the button at the specified row and column
+        button = self.grid_slaves(row=row, column=col)[0]
+
+        # Update the button's appearance
+        button.configure(text='')  # Remove the text
+        button.configure(fg_color="yellow")  # Blue for value 0
+
+        # Reset tracking variables and cancel any pending hover timeout
+        if button == self.current_hovered_button:
+            self.current_hovered_button = None
+        if button == self.last_clicked_button:
+            self.last_clicked_button = None
+        if self.hide_text_timer:
+            self.after_cancel(self.hide_text_timer)
+            self.hide_text_timer = None
+
+        # Re-bind the hover events for the cleaned button
+        button.bind("<Enter>", lambda event, btn=button: self.hover_enter(btn))        
 
 # Test the central frame class
 if __name__ == "__main__":
