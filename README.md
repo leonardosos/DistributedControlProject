@@ -1,8 +1,21 @@
-# Distributed Control Project
+# Distributed Control Interface Project
 
-This project is designed to facilitate distributed control systems. It consists of two main components: the map generator and the custom interface.
+## Overview
+This is a part of a project for the Distributed Control Systems course at the University of Modena and Reggio Emilia (UNIMORE). 
+The goal is to create a custom interface to interact with an autonomous vessel float, which is controlled by a distributed control system. The interface allows the user to visualize the discrete map and send a group of agents to a specific location for a cleaning task. 
+
+## Authors
+This part of the project was developed by:
+- [Leonardo Brighenti]
+
+## Technical Skills
+The project is developed using Python and leverages the `customtkinter` library to create custom widgets and the graphical user interface (GUI). (`customtkinter` is an enhanced version of the standard Tkinter library.)
+
+The codebase follows the object-oriented programming (OOP) paradigm, ensuring modularity and scalability.
 
 ## Folder Structure
+
+The repository contain two main components: the map generator and the custom interface.
 
 ### 1. `map_generator`
 This folder contains the code to create a matrix that defines a map with a fixed seed. It generates both a plot and a JSON file that can be shared with other applications. The generated files are saved within this folder.
@@ -29,7 +42,6 @@ pip install -r interface/requirements.txt
 git clone https://github.com/yourusername/DistributedControlProject.git
 cd DistributedControlProject
 ```
-
 2. Install the requirements for each component as described above.
 
 3. Run the map generator:
