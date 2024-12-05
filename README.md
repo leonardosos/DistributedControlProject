@@ -35,7 +35,6 @@ cd DistributedControlProject
 ```
 2. Install the requirements 
 
-#### Requirements
 To install the necessary dependencies, run:
 ```bash
 pip install -r requirements.txt

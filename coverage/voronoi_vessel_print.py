@@ -1,9 +1,14 @@
+'''
+This code do as well the same as the voronoi_vessel.py code, but it prints the robot positions to a JSON file.
+'''
+
 
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.path import Path
 import scipy.spatial
+import json
 
 # Function to compute Gaussian PDF
 def gauss_pdf(x, y, sigma, mean):
@@ -124,7 +129,7 @@ class RobotTeam:
 
         centroids = []
         for region in regions:
-            if -1 in region or len(region) == 0:
+            if region is None or -1 in region or len(region) == 0:
                 # Skip open or empty regions
                 centroids.append(None)
                 continue
@@ -147,39 +152,6 @@ class RobotTeam:
     def get_positions(self):
         return np.array([robot.position for robot in self.robots])
 
-# Animation function
-def animate(frame):
-    ax1.clear()
-    ax1.set_xlim(bounding_box[0], bounding_box[1])
-    ax1.set_ylim(bounding_box[2], bounding_box[3])
-    ax1.set_title("Robot Positions and Voronoi Diagram")
-
-    # Update robot positions
-    team.update_positions()
-    positions = team.get_positions()
-
-    #print(positions) # print the positions of the robots
-
-    # Plot the Gaussian distribution
-    plot_gaussian_2d(mean=team.mean, sigma=team.sigma,
-                     xlim=bounding_box[0:2], ylim=bounding_box[2:], ax=ax1)
-
-    # Plot Voronoi diagram
-    regions, vertices = bounded_voronoi(positions, bounding_box)
-    for region in regions:
-        if -1 in region or len(region) == 0:
-            continue
-        polygon = vertices[region + [region[0]], :]
-        ax1.plot(polygon[:, 0], polygon[:, 1], 'k-')
-
-    # Plot robots
-    ax1.plot(positions[:, 0], positions[:, 1], 'ro')
-
-    # Add grid
-    ax1.set_xticks(np.arange(bounding_box[0], bounding_box[1] + 1, 1))
-    ax1.set_yticks(np.arange(bounding_box[2], bounding_box[3] + 1, 1))
-    ax1.grid(True)
-
 # Main script
 n_robots = 5
 bounding_box = np.array([0., 10., 0., 10.])  # [x_min, x_max, y_min, y_max]
@@ -201,8 +173,61 @@ team = RobotTeam(n_robots, bounding_box, sigma, mean)
 # Set up the plot
 fig, ax1 = plt.subplots(figsize=(8, 8))
 
-# Create the animation
-anim = FuncAnimation(fig, animate, frames=200, interval=100, blit=False)
+# List to store the positions at each time step
+positions_over_time = []
 
-plt.tight_layout()
+# Number of time steps
+num_steps = 200
+
+# Simulation loop
+for step in range(num_steps):
+    team.update_positions()
+    positions = team.get_positions()
+    positions_over_time.append(positions.copy())  # Store a copy of positions
+
+    # Plotting
+    ax1.clear()
+    ax1.set_xlim(bounding_box[0], bounding_box[1])
+    ax1.set_ylim(bounding_box[2], bounding_box[3])
+    ax1.set_title("Robot Positions and Voronoi Diagram")
+
+    # Plot the Gaussian distribution
+    plot_gaussian_2d(mean=team.mean, sigma=team.sigma,
+                     xlim=bounding_box[0:2], ylim=bounding_box[2:], ax=ax1)
+
+    # Plot Voronoi diagram
+    regions, vertices = bounded_voronoi(positions, bounding_box)
+    for region in regions:
+        if region is None or -1 in region or len(region) == 0:
+            continue
+        polygon = vertices[region + [region[0]], :]
+        ax1.plot(polygon[:, 0], polygon[:, 1], 'k-')
+
+    # Plot robots
+    ax1.plot(positions[:, 0], positions[:, 1], 'ro')
+
+    # Add grid
+    ax1.set_xticks(np.arange(bounding_box[0], bounding_box[1] + 1, 1))
+    ax1.set_yticks(np.arange(bounding_box[2], bounding_box[3] + 1, 1))
+    ax1.grid(True)
+
+    # Display the plot
+    plt.pause(0.05)
+
+# After the simulation, save the positions to a JSON file
+# Convert positions_over_time to a serializable format
+data_to_save = []
+for timestep, positions in enumerate(positions_over_time):
+    timestep_data = {
+        'timestep': timestep,
+        'positions': positions.tolist()  # Convert numpy array to list
+    }
+    data_to_save.append(timestep_data)
+
+# Write the data to a JSON file
+with open('robot_positions.json', 'w') as f:
+    json.dump(data_to_save, f, indent=2)
+
+print("Robot positions have been saved to 'robot_positions.json'.")
+
 plt.show()
