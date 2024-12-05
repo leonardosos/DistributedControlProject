@@ -7,8 +7,7 @@ The goal is to create a custom interface to interact with an autonomous vessel f
 ![Screenshot of the Interface](images/screenshot.png)
 
 ## Authors
-This part of the project was developed by:
-- [Leonardo Brighenti]
+
 
 ## Technical Skills
 The project is developed using Python and leverages the `customtkinter` library to create custom widgets and the graphical user interface (GUI). (`customtkinter` is an enhanced version of the standard Tkinter library.)
@@ -24,20 +23,8 @@ This folder contains the code to create a matrix that defines a map with a fixed
 
 ![Discretized map of the environment](images/map.png)
 
-#### Requirements
-To install the necessary dependencies for the `map_generator`, run:
-```bash
-pip install -r map_generator/requirements.txt
-```
-
 ### 2. `interface`
 This folder contains the custom interface built using `customtkinter`. It provides a user-friendly interface to interact with the distributed control system.
-
-#### Requirements
-To install the necessary dependencies for the `interface`, run:
-```bash
-pip install -r interface/requirements.txt
-```
 
 ## Getting Started
 
@@ -46,7 +33,13 @@ pip install -r interface/requirements.txt
 git clone https://github.com/yourusername/DistributedControlProject.git
 cd DistributedControlProject
 ```
-2. Install the requirements for each component as described above.
+2. Install the requirements 
+
+#### Requirements
+To install the necessary dependencies, run:
+```bash
+pip install -r requirements.txt
+```
 
 3. Run the map generator:
 ```bash

@@ -1,0 +1,10 @@
+# Distributed algorithms
+scipy == 1.8.0
+networkx == 3.4.2
+
+# CustomTkinter for GUI
+customtkinter == 5.2.2
+
+# For plotting
+matplotlib == 3.9.2
+numpy == 2.1.3
