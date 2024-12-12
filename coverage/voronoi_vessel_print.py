@@ -1,16 +1,11 @@
-'''
-This code do as well the same as the voronoi_vessel.py code, but it prints the robot positions to a JSON file.
-'''
-
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
 from matplotlib.path import Path
 import scipy.spatial
 import json
 
-# Function to compute Gaussian PDF
+# --- Function: Gaussian PDF ---
 def gauss_pdf(x, y, sigma, mean):
     xt = mean[0]
     yt = mean[1]
@@ -18,8 +13,8 @@ def gauss_pdf(x, y, sigma, mean):
     val = np.exp(-temp)
     return val
 
-# Compute the centroid with a Gaussian weight
-def compute_centroid(vertices, sigma=1.0, mean=[0.5, 0.5], discretz_int=20):
+# --- Function: Compute centroid with Gaussian weight ---
+def compute_centroid(vertices, sigma, mean, discretz_int):
     x_inf = np.min(vertices[:, 0])
     x_sup = np.max(vertices[:, 0])
     y_inf = np.min(vertices[:, 1])
@@ -61,21 +56,15 @@ def compute_centroid(vertices, sigma=1.0, mean=[0.5, 0.5], discretz_int=20):
 
     return np.array([Cx, Cy])
 
-# Generate bounded Voronoi diagram
+# --- Function: Generate bounded Voronoi diagram ---
 def bounded_voronoi(points, bounding_box):
-    # Mirror points to create a finite Voronoi diagram
     points_center = points
-
-    # Mirroring points
     points_left = points_center.copy()
     points_left[:, 0] = bounding_box[0] - (points_left[:, 0] - bounding_box[0])
-
     points_right = points_center.copy()
     points_right[:, 0] = bounding_box[1] + (bounding_box[1] - points_right[:, 0])
-
     points_down = points_center.copy()
     points_down[:, 1] = bounding_box[2] - (points_down[:, 1] - bounding_box[2])
-
     points_up = points_center.copy()
     points_up[:, 1] = bounding_box[3] + (bounding_box[3] - points_up[:, 1])
 
@@ -85,115 +74,78 @@ def bounded_voronoi(points, bounding_box):
     # Compute Voronoi diagram
     vor = scipy.spatial.Voronoi(points_all)
 
-    # Filter regions to only include those corresponding to the original points
+    # Filter regions to include only those for the original points
     regions = [vor.regions[vor.point_region[i]] for i in range(len(points_center))]
     vertices = vor.vertices
 
     return regions, vertices
 
-# Function to plot Gaussian 2D distribution
+# --- Function: Plot Gaussian distribution ---
 def plot_gaussian_2d(mean, sigma, xlim, ylim, resolution=100, ax=None):
-    # Create a grid of points
     x = np.linspace(xlim[0], xlim[1], resolution)
     y = np.linspace(ylim[0], ylim[1], resolution)
     X, Y = np.meshgrid(x, y)
-    # Calculate Gaussian values over the grid
     Z = gauss_pdf(X, Y, sigma, mean)
-    # Plot the Gaussian distribution as a heatmap
     if ax is None:
         ax = plt.gca()
-    c = ax.contourf(X, Y, Z, levels=50, cmap='viridis')
-    return c
+    return ax.contourf(X, Y, Z, levels=50, cmap='viridis')
 
-# Define the Robot class
+# --- Class: Robot ---
 class Robot:
     def __init__(self, x, y):
         self.position = np.array([float(x), float(y)])  # Ensure position is stored as floats
 
-# Define the RobotTeam class with coverage algorithm
+# --- Class: RobotTeam ---
 class RobotTeam:
-    def __init__(self, n_robots, bounding_box, sigma, mean):
-        # Initialize robots at positions along the diagonal
+    def __init__(self, n_robots, bounding_box, sigma, mean, gain_speed, discretz_int):
         self.robots = [Robot(0.2 * i, 0.2 * i) for i in range(n_robots)]
-        self.n_robots = n_robots
         self.bounding_box = bounding_box
         self.sigma = sigma
         self.mean = mean
+        self.gain_speed = gain_speed
+        self.discretz_int = discretz_int
 
     def update_positions(self):
-        # Get current positions
         positions = self.get_positions()
-
-        # Compute Voronoi diagram
         regions, vertices = bounded_voronoi(positions, self.bounding_box)
-
         centroids = []
+        self.displacements = []
+
         for region in regions:
             if region is None or -1 in region or len(region) == 0:
-                # Skip open or empty regions
                 centroids.append(None)
                 continue
             polygon = vertices[region + [region[0]], :]
-
-            # Compute weighted centroid using Gaussian distribution
-            centroid = compute_centroid(polygon, sigma=self.sigma, mean=self.mean, discretz_int=20)
+            centroid = compute_centroid(polygon, sigma=self.sigma, mean=self.mean, discretz_int=discretz_int)
             centroids.append(centroid)
 
-        # Update positions towards the centroids
+        # Update positions
         for i, robot in enumerate(self.robots):
             if centroids[i] is not None:
-                displacement = (centroids[i] - robot.position) * 0.1  # Adjust step size as needed
+                displacement = (centroids[i] - robot.position) * self.gain_speed
                 robot.position += displacement
-
+                # Store displacement magnitude for convergence check
+                self.displacements.append(np.linalg.norm(displacement))
                 # Ensure robots stay within the bounding box
                 robot.position[0] = np.clip(robot.position[0], self.bounding_box[0], self.bounding_box[1])
                 robot.position[1] = np.clip(robot.position[1], self.bounding_box[2], self.bounding_box[3])
 
+            else:
+                self.displacements.append(0.0)
+
     def get_positions(self):
         return np.array([robot.position for robot in self.robots])
 
-# Main script
-n_robots = 5
-bounding_box = np.array([0., 10., 0., 10.])  # [x_min, x_max, y_min, y_max]
 
-# Parameters for Gaussian distribution
-sigma = 0.5  # Set sigma to match the size of a grid cell
+# --- Function 1: Plot the simulation ---
+def plot_simulation(ax, team, bounding_box, positions, step, sim_dimension, number_of_cells):
+    ax.clear()
+    ax.set_xlim(bounding_box[0], bounding_box[1])
+    ax.set_ylim(bounding_box[2], bounding_box[3])
+    ax.set_title(f"Step {step}: Robot Positions and Voronoi Diagram")
 
-# Allow user to select the row and column for Gaussian center (0-indexed)
-gaussian_row = 5  # Change to desired row (0 to 9)
-gaussian_column = 5  # Change to desired column (0 to 9)
-
-# Calculate the mean based on selected row and column
-mean_x = gaussian_column + 0.5
-mean_y = gaussian_row + 0.5
-mean = [mean_x, mean_y]
-
-team = RobotTeam(n_robots, bounding_box, sigma, mean)
-
-# Set up the plot
-fig, ax1 = plt.subplots(figsize=(8, 8))
-
-# List to store the positions at each time step
-positions_over_time = []
-
-# Number of time steps
-num_steps = 200
-
-# Simulation loop
-for step in range(num_steps):
-    team.update_positions()
-    positions = team.get_positions()
-    positions_over_time.append(positions.copy())  # Store a copy of positions
-
-    # Plotting
-    ax1.clear()
-    ax1.set_xlim(bounding_box[0], bounding_box[1])
-    ax1.set_ylim(bounding_box[2], bounding_box[3])
-    ax1.set_title("Robot Positions and Voronoi Diagram")
-
-    # Plot the Gaussian distribution
-    plot_gaussian_2d(mean=team.mean, sigma=team.sigma,
-                     xlim=bounding_box[0:2], ylim=bounding_box[2:], ax=ax1)
+    # Plot Gaussian distribution
+    plot_gaussian_2d(mean=team.mean, sigma=team.sigma, xlim=bounding_box[0:2], ylim=bounding_box[2:], ax=ax)
 
     # Plot Voronoi diagram
     regions, vertices = bounded_voronoi(positions, bounding_box)
@@ -201,33 +153,73 @@ for step in range(num_steps):
         if region is None or -1 in region or len(region) == 0:
             continue
         polygon = vertices[region + [region[0]], :]
-        ax1.plot(polygon[:, 0], polygon[:, 1], 'k-')
+        ax.plot(polygon[:, 0], polygon[:, 1], 'k-')
 
     # Plot robots
-    ax1.plot(positions[:, 0], positions[:, 1], 'ro')
+    ax.plot(positions[:, 0], positions[:, 1], 'ro')
 
     # Add grid
-    ax1.set_xticks(np.arange(bounding_box[0], bounding_box[1] + 1, 1))
-    ax1.set_yticks(np.arange(bounding_box[2], bounding_box[3] + 1, 1))
-    ax1.grid(True)
+    ax.set_xticks(np.arange(bounding_box[0], bounding_box[1] + 1, sim_dimension / number_of_cells))
+    ax.set_yticks(np.arange(bounding_box[2], bounding_box[3] + 1, sim_dimension / number_of_cells))
+    ax.grid(True)
 
-    # Display the plot
-    plt.pause(0.05)
 
-# After the simulation, save the positions to a JSON file
-# Convert positions_over_time to a serializable format
-data_to_save = []
-for timestep, positions in enumerate(positions_over_time):
-    timestep_data = {
-        'timestep': timestep,
-        'positions': positions.tolist()  # Convert numpy array to list
-    }
-    data_to_save.append(timestep_data)
+# --- Function 2: Save robot positions to a JSON file ---
+def save_positions_to_file(positions_over_time, filename='robot_positions.json'):
+    data_to_save = []
+    for timestep, positions in enumerate(positions_over_time):
+        timestep_data = {'timestep': timestep, 'positions': positions.tolist()}  # Convert to serializable format
+        data_to_save.append(timestep_data)
 
-# Write the data to a JSON file
-with open('robot_positions.json', 'w') as f:
-    json.dump(data_to_save, f, indent=2)
+    with open(filename, 'w') as f:
+        json.dump(data_to_save, f, indent=4)
 
-print("Robot positions have been saved to 'robot_positions.json'.")
+    print(f"Robot positions saved to '{filename}'.")
 
+
+# --- Main Script ---
+n_robots = 5
+sim_dimension = 100.0
+number_of_cells = 10.0
+cell_dimension = sim_dimension / number_of_cells
+bounding_box = np.array([0., sim_dimension, 0., sim_dimension])
+gain_speed = 0.5
+tolerance = 0.025  # Convergence threshold
+discretz_int=100 # Discretization for voronoi
+
+# Gaussina Cell 
+gaussian_row = 2
+gaussian_column = 7
+
+# Gaussian parameters
+sigma = cell_dimension / 4
+mean_x = gaussian_column * cell_dimension + cell_dimension / 2
+mean_y = gaussian_row * cell_dimension + cell_dimension / 2
+mean = [mean_x, mean_y]
+
+# Initialize team and variables
+team = RobotTeam(n_robots, bounding_box, sigma, mean, gain_speed, discretz_int)
+positions_over_time = []
+max_steps = 500
+
+# Simulation loop
+fig, ax1 = plt.subplots(figsize=(8, 8))
+for step in range(max_steps):
+    team.update_positions()
+    positions = team.get_positions()
+    positions_over_time.append(positions.copy())
+
+    max_displacement = max(team.displacements)
+    if max_displacement < tolerance:
+        print(f"Convergence reached at step {step}. Maximum displacement: {max_displacement:.5f}")
+        break
+
+    # Call the plot function
+    plot_simulation(ax1, team, bounding_box, positions, step, sim_dimension, number_of_cells)
+    plt.pause(0.01)
+
+# Save data to file
+save_positions_to_file(positions_over_time, 'robot_positions.json')
+
+# Show final plot
 plt.show()

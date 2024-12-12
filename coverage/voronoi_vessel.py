@@ -202,7 +202,7 @@ team = RobotTeam(n_robots, bounding_box, sigma, mean)
 fig, ax1 = plt.subplots(figsize=(8, 8))
 
 # Create the animation
-anim = FuncAnimation(fig, animate, frames=200, interval=100, blit=False)
+anim = FuncAnimation(fig, animate, frames=2200, interval=100, blit=False)
 
 plt.tight_layout()
 plt.show()
