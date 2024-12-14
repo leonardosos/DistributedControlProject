@@ -43,7 +43,7 @@ class App(customtkinter.CTk):
         # Variables to keep track of the mission
         self.count_mission = 0
         self.ongoing_mission = 0
-        self.vessel_available = 10
+        self.vessel_available = 4
         self.garbage_collected = 0
         self.mission_info = dict()
 
