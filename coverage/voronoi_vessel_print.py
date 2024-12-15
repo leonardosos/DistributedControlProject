@@ -35,6 +35,7 @@ from map_analysis import conversion_map
 # Choose the configuration for the simulation
 PLOT_INITIAL = False     # Set to True to plot the initial formation
 PLOT = False             # Set to True to plot the simulation
+PLOT_REVERT = False       # Set to True to plot the trajectory reverted + non reverted
 SAVE_TO_FILE = False     # Set to True to save the positions to a file
 PRINT_STATS = False      # Set to True to print additional information
 OFFSET_ZERO = True       # Set to True to offset the return coordinates
@@ -342,6 +343,87 @@ def apply_offset(positions, offset):
         
     return offset_positions
 
+def simulation_revert_axis(positions_over_time, number_of_cells, cell_dimension, sim_dimension):
+    """
+    Apply a 180° rotation and a translation by (sim_dimension - cell_dimension) to each point at each timestep.
+    
+    Parameters:
+    positions_over_time (list of lists): List of positions for each timestep.
+    number_of_cells (int): Number of cells in the grid.
+    cell_dimension (float): Dimension of each cell.
+    sim_dimension (float): Dimension of the simulation area.
+    
+    Returns:
+    list of lists: Transformed positions for each timestep.
+    """
+    transformed_positions = []
+
+    for timestep in positions_over_time:
+        transformed_timestep = []
+        for x, y in timestep:
+            # Apply 180° rotation: (x, y) -> (-x, -y)
+            x_rotated = -x
+            y_rotated = -y
+
+            # Apply translation: (x, y) -> (x, y + (sim_dimension - cell_dimension))
+            x_transformed = x_rotated
+            y_transformed = y_rotated + (sim_dimension - cell_dimension)
+
+            transformed_timestep.append((x_transformed, y_transformed))
+        transformed_positions.append(transformed_timestep)
+    
+    return transformed_positions
+
+def plot_trajectory(robot_positions, number_of_cells, cell_dimension, sim_dimension):
+    """
+    Plots the trajectory of the robots over time with a simulation cell grid and
+    marks the initial and ending positions.
+
+    Parameters:
+    robot_positions (list of lists): Positions for each robot over time.
+    number_of_cells (int): Number of cells in the grid.
+    cell_dimension (float): Dimension of each cell.
+    sim_dimension (float): Dimension of the simulation area.
+    """
+    fig, ax = plt.subplots()
+
+    # Set the axis limits
+    ax.set_xlim(-sim_dimension, sim_dimension)
+    ax.set_ylim(0, sim_dimension)
+
+    # Add a grid with a width and height of 3.5
+    ax.set_xticks(np.arange(-sim_dimension + cell_dimension / 2, sim_dimension - cell_dimension / 2 + 3.5, 3.5))
+    ax.set_yticks(np.arange(-sim_dimension + cell_dimension / 2, sim_dimension - cell_dimension / 2 + 3.5, 3.5))
+    
+    # Set the axis labels and title
+    ax.set_title("Robot Trajectories with Grid and Start/End Points")
+    ax.set_xlabel("X Position")
+    ax.set_ylabel("Y Position")
+
+    # Unique colors for each robot
+    cmap = plt.get_cmap("hsv", len(robot_positions))
+
+    # Plot robot trajectories, start, and end points
+    for idx, robot_positions_over_time in enumerate(robot_positions):
+        x = [pos[0] for pos in robot_positions_over_time]
+        y = [pos[1] for pos in robot_positions_over_time]
+
+        # Plot the trajectory
+        ax.plot(x, y, label=f'Robot {idx+1}', color=cmap(idx))
+        
+        # Mark the starting position
+        ax.plot(x[0], y[0], 'o', color=cmap(idx))  # Circle marker for start
+        ax.text(x[0], y[0], "Start", color=cmap(idx), fontsize=10)
+
+        # Mark the ending position
+        ax.plot(x[-1], y[-1], 's', color=cmap(idx))  # Square marker for end
+        ax.text(x[-1], y[-1], "End", color=cmap(idx), fontsize=10)
+
+    # Add a grid, legend, and show the plot
+    ax.grid(True, color="lightgray", linestyle="--", linewidth=0.5)
+    ax.legend()
+
+    plt.show()
 
 # --- Function: Simulation ---
 def simulation(n_robots, gaussian_row, gaussian_column):
@@ -418,11 +500,21 @@ def simulation(n_robots, gaussian_row, gaussian_column):
     # Show final plot
     if PLOT: plt.show()
 
+    # Apply offset to the positions
     if OFFSET_ZERO: 
         positions_over_time = apply_offset(positions_over_time, offset=[cell_dimension/2, cell_dimension/2])
     
-    return decuple_robot_positions(positions_over_time)
+    # Plot the trajectory of the robots over time - not reverted
+    if PLOT_REVERT: plot_trajectory(decuple_robot_positions(positions_over_time), number_of_cells, cell_dimension, sim_dimension)
 
+    # Revert the axis and plot the trajectory of the robots over time
+    positions_over_time = simulation_revert_axis(positions_over_time, number_of_cells, cell_dimension, sim_dimension)
+
+    # Plot the trajectory of the robots over time - reverted
+    if PLOT_REVERT: plot_trajectory(decuple_robot_positions(positions_over_time), number_of_cells, cell_dimension, sim_dimension)
+
+    # Return the positions of the robots over time
+    return decuple_robot_positions(positions_over_time)
 
 
 # test the simulation

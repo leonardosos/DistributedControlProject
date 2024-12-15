@@ -3,10 +3,9 @@ This script computes the path for the motherboat to follow.
 
 The path is computed using the A* algorithm (obstacle avoidance is implemented).
 
-The motherboat starts at the bottom-left corner of the map and moves to the center of mass of the map.
+The path is given in grid indices.
 
-The path is converted from grid indices to real-world coordinates using the index2coord2offset function.
- -> The zero real coordinates are centered on the center-cell of the bottom-left cell.
+The motherboat starts at the bottom-left corner of the map and moves to the center of mass of the map.
 '''
 
 
@@ -65,19 +64,6 @@ def astar_path(map_grid, start, goal):
     else:
         return None
 
-def compute_list_coordinates(cell_dimension, number_of_cells, path):
-    '''
-    This function converts the path from grid indices to real-world coordinates.
-    '''
-
-    coordinate_list = list()
-
-    for point in path:
-        row, col = point
-        coordinate_list.append(conversion_map.index2coord2offset(cell_dimension, number_of_cells, row, col))
-
-    return coordinate_list
-
 def motherboat_path():
     '''
     This function computes the path for the motherboat to follow.
@@ -87,10 +73,8 @@ def motherboat_path():
 
     The path is computed using the A* algorithm.
 
-    Convert the path from grid indices to real-world coordinates- using the index2coord2offset function.
-
     Returns:
-        coordinate_list (list): A list of tuples containing the real-world coordinates of the path.
+        coordinate_list (list): A list of (row, col) tuples representing the path in grid indices.
     '''
 
     # --- Environment parameters ---
@@ -128,7 +112,7 @@ def motherboat_path():
             print("Path found!")
             print(path)
         
-        return compute_list_coordinates(cell_dimension, number_of_cells, path)
+        return path
     
     else:
         raise ValueError("No path found!")
