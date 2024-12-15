@@ -27,11 +27,9 @@ import sys
 import os
 
 # --- Import the required functions from the modules ---
-# Add the path to the weighted_position module
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from map_analysis.Weighted_Position import find_best_position  # Import the function
-from map_analysis.parse_map import parse_map  # Import the function
-
+from map_analysis import center_of_mass
+from map_analysis import conversion_map
 
 
 # Choose the configuration for the simulation
@@ -184,10 +182,8 @@ class RobotTeam:
         self.gain_speed = gain_speed
         self.discretz_int = discretz_int
         self.cell_dimension = cell_dimension
-        self.motherboat_position = ((motherboat_position[0] * cell_dimension) + cell_dimension/2 , 
-                                    (motherboat_position[1] * cell_dimension) + cell_dimension/2)
-        if PRINT_STATS: print(f'Motherboat position {motherboat_position} -> {self.motherboat_position}')
-        
+        self.motherboat_position = motherboat_position
+
         self.robots = list()
         self.initialize_robots_positions()
 
@@ -315,33 +311,6 @@ def save_positions_to_file(positions_over_time, file_path):
 
     print(f"Robot positions saved to '{file_path}'.")
 
-
-# --- Function: Compute start position ---
-def compute_start_position(number_of_cells, map_name):  
-    '''
-    This function computes the start position of the motherboat based on the map.
-    The motherboat is placed in the cell with the highest weight.
-    '''
-
-    json_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'map_generator', map_name))
-    
-    parsed_data, dimensions = parse_map(json_path)
-
-    if PRINT_STATS:  print(f'Garbage at {parsed_data}')
-    
-    coordinates = list(parsed_data.keys())
-    weights = list(parsed_data.values())
-    
-    start_position = find_best_position(number_of_cells, coordinates, weights)[0]
-    
-    if number_of_cells != dimensions[0] or number_of_cells != dimensions[1]:
-        raise ValueError("The number of cells must match the dimensions of the map.")
-
-    if PRINT_STATS:  print(f"Start position: {start_position}")
-    if PRINT_STATS:  print(f"Coordinates: {coordinates}")
-    
-    return start_position 
-
 def decuple_robot_positions(positions):
     '''
     This function takes the positions of the robots at each timestep and returns n list of positions
@@ -396,19 +365,22 @@ def simulation(n_robots, gaussian_row, gaussian_column):
     bounding_box = np.array([0., sim_dimension, 0., sim_dimension])
 
     # Start position
-    motherboat_position = compute_start_position(number_of_cells, map_name='map.json')
+    motherboat_index_position = center_of_mass.compute_center_position(number_of_cells, map_folder='map_generator' ,map_name='map.json')
+    motherboat_position = conversion_map.index2coord(cell_dimension, number_of_cells, motherboat_index_position[0], motherboat_index_position[1])
+
+    # Gaussian parameters for the target position
+    sigma = cell_dimension / 5
+    mean = conversion_map.index2coord(cell_dimension, number_of_cells, gaussian_row, gaussian_column)
+
+    if PRINT_STATS:
+        print(f"Motherboat idex: {motherboat_index_position} with position: {motherboat_position}")
+        print(f"Target index ({gaussian_row},{gaussian_column}) with position: {mean}")
 
     # Voronoi Parameters
     gain_speed = 0.1
     tolerance = 0.005  # Convergence threshold
     discretz_int=100   # Discretization for voronoi
     max_steps = 500    # Maximum number of steps
-
-    # Gaussian parameters
-    sigma = cell_dimension / 5
-    mean_x = gaussian_column * cell_dimension + cell_dimension / 2
-    mean_y = gaussian_row * cell_dimension + cell_dimension / 2
-    mean = [mean_x, mean_y]
 
     # Initialize team and variables
     team = RobotTeam(n_robots, 
@@ -434,12 +406,11 @@ def simulation(n_robots, gaussian_row, gaussian_column):
 
         max_displacement = max(team.displacements)
         if max_displacement < tolerance:
-            print(f"Convergence reached at step {step}. Maximum displacement: {max_displacement:.5f}")
+            print(f"Voronoi Convergence reached at step {step}. Maximum displacement: {max_displacement:.5f}")
             break
 
         # Call the plot function
         if PLOT: plot_simulation(ax1, team, bounding_box, positions, step, sim_dimension, number_of_cells)
-
         if PLOT: plt.pause(0.01)
 
     if SAVE_TO_FILE: save_positions_to_file(positions_over_time, 'PATH_to_follow/vessel_positions.json')
@@ -457,11 +428,11 @@ def simulation(n_robots, gaussian_row, gaussian_column):
 # test the simulation
 if __name__ == '__main__':
     # Simulation parameters
-    n_robots = 4
+    n_robots = 5
 
     # Target position - Gaussina Cell 
-    gaussian_row = 2
-    gaussian_column = 7
+    row = 1
+    column = 0
 
     #simulation(n_robots, gaussian_row, gaussian_column)
-    simulation(n_robots, gaussian_row, gaussian_column)
+    simulation(n_robots, row, column)
