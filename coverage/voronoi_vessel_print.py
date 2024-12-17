@@ -17,6 +17,7 @@ Some configuration parameters can be set at the beginning of the script:
 - The return coordinates can be offset to the center of the cell instead of the corner.
 '''
 
+from matplotlib.cbook import pts_to_midstep
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.path import Path
@@ -36,7 +37,7 @@ from map_analysis import conversion_map
 PLOT_INITIAL = False     # Set to True to plot the initial formation
 PLOT = False             # Set to True to plot the simulation
 PLOT_REVERT = False       # Set to True to plot the trajectory reverted + non reverted
-SAVE_TO_FILE = False     # Set to True to save the positions to a file
+SAVE_TO_FILE = True     # Set to True to save the positions to a file
 PRINT_STATS = False      # Set to True to print additional information
 OFFSET_ZERO = True       # Set to True to offset the return coordinates
                             #to the center of (last row, first column) cell instead of the corner
@@ -291,10 +292,13 @@ def plot_simulation(ax, team, bounding_box, positions, step, sim_dimension, numb
 
 
 # --- Function: Save robot positions to a JSON file ---
-def save_positions_to_file(positions_over_time, file_path):
+def save_positions_to_file(positions_over_time, file_path, single_position):
     '''
     This function saves the positions of the robots over time to a JSON file.
     The file is saved in the specified file path.
+
+    if the single_position=True the json dump handle single vessel path
+    if the single_position=False the json dump do for all the vessel for each time frame
     '''
 
     # Create directory if it does not exist
@@ -303,9 +307,14 @@ def save_positions_to_file(positions_over_time, file_path):
         os.makedirs(directory)
 
     data_to_save = []
-    for timestep, positions in enumerate(positions_over_time):
-        timestep_data = {'timestep': timestep, 'positions': positions.tolist()}  # Convert to serializable format
-        data_to_save.append(timestep_data)
+
+    if not single_position:
+        for timestep, positions in enumerate(positions_over_time):
+            timestep_data = {'timestep': timestep, 'positions': positions.tolist()}  # Convert to serializable format
+            data_to_save.append(timestep_data)
+    else:
+        for position in positions_over_time:
+            data_to_save.append(position)
 
     with open(file_path, 'w') as f:
         json.dump(data_to_save, f, indent=4)
@@ -317,10 +326,10 @@ def decuple_robot_positions(positions):
     This function takes the positions of the robots at each timestep and returns n list of positions
     where n is the number of robots. Each list contains the positions of the robot over time. 
     '''
-    # Assuming positions is a list of lists where each inner list contains the positions of all robots at a given timestep
+
     num_robots = len(positions[0])
     robot_positions = [[] for _ in range(num_robots)]
-    
+
     for timestep in positions:
         for i, position in enumerate(timestep):
             robot_positions[i].append(position)
@@ -495,8 +504,6 @@ def simulation(n_robots, gaussian_row, gaussian_column):
         if PLOT: plot_simulation(ax1, team, bounding_box, positions, step, sim_dimension, number_of_cells)
         if PLOT: plt.pause(0.01)
 
-    if SAVE_TO_FILE: save_positions_to_file(positions_over_time, 'PATH_to_follow/vessel_positions.json')
-
     # Show final plot
     if PLOT: plt.show()
 
@@ -512,6 +519,18 @@ def simulation(n_robots, gaussian_row, gaussian_column):
 
     # Plot the trajectory of the robots over time - reverted
     if PLOT_REVERT: plot_trajectory(decuple_robot_positions(positions_over_time), number_of_cells, cell_dimension, sim_dimension)
+
+    if SAVE_TO_FILE: 
+
+        list_of_positions = decuple_robot_positions(positions_over_time)  
+
+        count = 0
+
+        for i in list_of_positions:
+            name = f'PATH_to_follow/vessel_{count}_positions.json'
+            count += 1  
+
+            save_positions_to_file(i, f'PATH_to_follow/vessel_{count}_positions.json', single_position=True)
 
     # Return the positions of the robots over time
     return decuple_robot_positions(positions_over_time)
