@@ -1,12 +1,14 @@
-'''
-This script computes the path for the motherboat to follow. 
+"""
+This script computes the path for the motherboat to follow.
 
-The path is computed using the A* algorithm (obstacle avoidance is implemented).
-
-The path is given in grid indices.
+The path is computed using the A* algorithm with obstacle avoidance implemented.
 
 The motherboat starts at the bottom-left corner of the map and moves to the center of mass of the map.
-'''
+
+The path is then smoothed using spline interpolation to ensure a smooth trajectory.
+
+A list of setting is provided at the beginning of the script for easy configuration of plot and print options.
+"""
 
 
 import json
@@ -28,8 +30,8 @@ from pathfinding.core.grid import Grid
 from pathfinding.finder.a_star import AStarFinder
 
 # Configuration
-PRINT_STATS = True      # Set to True to print additional information
-PLOT_TRAJECTORY = True  # Set to True to plot the trajectory
+PRINT_STATS = False      # Set to True to print additional information
+PLOT_TRAJECTORY = False  # Set to True to plot the trajectory
 
 def simulation_revert_axis(positions_over_time, number_of_cells, cell_dimension, sim_dimension):
     """
@@ -66,6 +68,8 @@ def smooth_path(path, spline_factor=2, path_point=200):
 
     Parameters:
     path (list of tuples): The original path as a list of (x, y) tuples.
+    spline_factor (int): The smoothing factor.
+    path_point (int): The number of points to generate along the spline for smoothing.
 
     Returns:
     smoothed_path (list of tuples): The smoothed path as a list of (x, y) tuples.
@@ -178,17 +182,19 @@ def plot_trajectory(robot_positions, number_of_cells, cell_dimension, sim_dimens
 
 
 def motherboat_path(path_point):
-    '''
-    This function computes the path for the motherboat to follow.
+    """
+    Computes the path for the motherboat to follow.
 
-    It set environment parameters, load the map data, define the starting position (0, 0),
-        compute the goal position using the center of mass function on the map data.
+    This function sets environment parameters, loads the map data, defines the starting position (0, 0),
+    and computes the goal position using the center of mass function on the map data. The path is computed
+    using the A* algorithm and then smoothed using a spline interpolation.
 
-    The path is computed using the A* algorithm.
+    Parameters:
+    path_point (int): The number of points to generate along the spline for smoothing.
 
     Returns:
-        coordinate_list (list): A list of (row, col) tuples representing the path in grid indices.
-    '''
+    list of tuples: A list of (x, y) tuples representing the smoothed path.
+    """
 
     # --- Environment parameters ---
     sim_dimension = 35.0    # Physical dimension

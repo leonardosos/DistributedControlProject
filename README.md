@@ -2,21 +2,29 @@
 
 ## Overview
 This is a part of a project for the Distributed Control Systems course at the University of Modena and Reggio Emilia (UNIMORE). 
-The goal is to create a custom interface to interact with an autonomous vessel float, which is controlled by a distributed control system. The interface allows the user to visualize the discrete map and send a group of agents to a specific location for a cleaning task. 
 
-![Screenshot of the Interface](images/screenshot.png)
+The goal is to build a simulation of a cleaning portion of the sea. It starts with a recognition with a drone formation that detects garbage, then a motherboat finds its best position and dispatches a cleaning fleet of vessels that compute the cleaning, accordingly with human commands through an interface.
 
-## Authors
-
+## Author
 
 ## Technical Skills
-The project is developed using Python and leverages the `customtkinter` library to create custom widgets and the graphical user interface (GUI). (`customtkinter` is an enhanced version of the standard Tkinter library.)
 
-The codebase follows the object-oriented programming (OOP) paradigm, ensuring modularity and scalability.
+Distributed algorithms are used to control the formation and coverage of the agents:
+- Formation Control: Consensus algorithm is used to control the formation of the agents.
+- Coverage Control: Voronoi algorithm is used to control the coverage of the agents.
+
+Creation of custom graphical user interface (GUI). (`customtkinter` is an enhanced version of the standard Tkinter library.)
+
+OOP paradigm (Object-Oriented Programming) is used to ensure modularity and scalability of the codebase. 
 
 ## Folder Structure
 
-The repository contain two main components: the map generator and the custom interface.
+The repository contain: 
+- the map generator
+- custom interface
+- formation control
+- coverage control
+- path planning for the motherboat
 
 ### 1. `map_generator`
 This folder contains the code to create a matrix that defines a map with a fixed seed. It generates both a plot and a JSON file that can be shared with other applications. The generated files are saved within this folder.
@@ -26,27 +34,17 @@ This folder contains the code to create a matrix that defines a map with a fixed
 ### 2. `interface`
 This folder contains the custom interface built using `customtkinter`. It provides a user-friendly interface to interact with the distributed control system.
 
-## Getting Started
+![Screenshot of the Interface](images/screenshot.png)
 
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/DistributedControlProject.git
-cd DistributedControlProject
-```
-2. Install the requirements 
+### 3. `formation`
+This folder contains the script [formation_control.py](formation/formation_control.py) which controls the formation of a team of robots. The robots are controlled to maintain a specific formation while navigating through a given space, using consensus algorithm. 
+The positions are updated and visualized in real-time using Matplotlib's FuncAnimation.
 
-To install the necessary dependencies, run:
-```bash
-pip install -r requirements.txt
-```
+### 4. `coverage`
+This folder contains the script [voronoi_vessel_print.py](coverage/voronoi_vessel_print.py) which runs a simulation of a team of vessels using the Voronoi algorithm. The robots update their positions based on the Voronoi algorithm with Gaussian weights centered at a target position.
+The positions are updated and visualized in real-time using Matplotlib's FuncAnimation.
 
-3. Run the map generator:
-```bash
-python map_generator/generate_map.py
-```
-or use the map.json already present in the folder
+### 5. `move_motherboat`
+This folder contains the script [motherboat_w-obstacle.py](move_motherboat/motherboat_w-obstacle.py) which computes the path for the motherboat to follow using the A* algorithm with obstacle avoidance. The path is then smoothed using spline interpolation to ensure a smooth trajectory.
+The positions are updated and visualized in real-time using Matplotlib's FuncAnimation.
 
-4. Launch the interface:
-```bash
-python interface/main.py
-```

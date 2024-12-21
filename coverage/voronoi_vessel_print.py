@@ -35,10 +35,10 @@ from map_analysis import conversion_map
 
 # Choose the configuration for the simulation
 PLOT_INITIAL = False     # Set to True to plot the initial formation
-PLOT = False             # Set to True to plot the simulation
+PLOT = True             # Set to True to plot the simulation
 PLOT_REVERT = False       # Set to True to plot the trajectory reverted + non reverted
-SAVE_TO_FILE = True     # Set to True to save the positions to a file
-PRINT_STATS = False      # Set to True to print additional information
+SAVE_TO_FILE = False     # Set to True to save the positions to a file
+PRINT_STATS = True      # Set to True to print additional information
 OFFSET_ZERO = True       # Set to True to offset the return coordinates
                             #to the center of (last row, first column) cell instead of the corner
 
@@ -524,12 +524,10 @@ def simulation(n_robots, gaussian_row, gaussian_column):
 
         list_of_positions = decuple_robot_positions(positions_over_time)  
 
+        # Save the positions to a JSON file for each vessel
         count = 0
-
         for i in list_of_positions:
-            name = f'PATH_to_follow/vessel_{count}_positions.json'
             count += 1  
-
             save_positions_to_file(i, f'PATH_to_follow/vessel_{count}_positions.json', single_position=True)
 
     # Return the positions of the robots over time
