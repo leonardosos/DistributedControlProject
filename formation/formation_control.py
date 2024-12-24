@@ -6,6 +6,8 @@ The robots are controlled to maintain a specific formation while navigating thro
 The robot positions are updated and visualized in real-time using Matplotlib's FuncAnimation.
 
 The script also includes options for saving the simulation output to a file and generating Coppelia-like output.
+
+This script is used, only, to stamp the positions of the robots in a JSON file for each vessel. So the structure is different from the other scripts.
 '''
 
 import numpy as np
@@ -22,7 +24,7 @@ from map_analysis.conversion_map import index2coord
 
 # Set the parameters for the simulation
 PLOT_SIM = False
-PLOT_TRAJECTORY = True
+PLOT_TRAJECTORY = False
 COPPELIA_OUTPUT = True  # Coppelia-like output
 SAVE_TO_FILE = True
 
@@ -208,6 +210,9 @@ def plot_trajectory(positions_over_time):
     plt.grid(True)
     plt.axis('equal')
     plt.show()
+
+
+# MAIN SCRIPT
 
 # Set up the simulation parameters
 n_robots = 5  # Number of robots (pentagon has 5 vertices)

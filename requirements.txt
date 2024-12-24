@@ -9,4 +9,5 @@ customtkinter == 5.2.2
 matplotlib 
 numpy 
 
+# For A*
 pathfinding

@@ -21,6 +21,7 @@ from scipy.interpolate import splprep, splev
 
 # --- Import the required functions from the modules ---
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from coverage.voronoi_vessel_print import save_positions_to_file
 from map_analysis import center_of_mass
 from map_analysis import conversion_map
 
@@ -32,6 +33,9 @@ from pathfinding.finder.a_star import AStarFinder
 # Configuration
 PRINT_STATS = False      # Set to True to print additional information
 PLOT_TRAJECTORY = False  # Set to True to plot the trajectory
+SAVE_TO_FILE = True      # Set to True to save the positions to a file
+COPPELIA_OUTPUT = True   # Coppelia-like output
+
 
 def simulation_revert_axis(positions_over_time, number_of_cells, cell_dimension, sim_dimension):
     """
@@ -227,6 +231,7 @@ def motherboat_path(path_point):
     index_path = astar_path(map, start_position, goal_position)
 
     if PRINT_STATS:
+        # Print the path in indices
         print("Path in indices:")
         print(index_path)
 
@@ -236,17 +241,26 @@ def motherboat_path(path_point):
         coord_path.append(conversion_map.index2coord2offset(cell_dimension, number_of_cells, cell[0], cell[1]))
 
     if PRINT_STATS:
+        # Print the path in coordinates
         print("Path in coordinates:")
         print(coord_path)
 
     # Smooth the path    
     spline_factor = 2 # Smoothing factor
-
     coord_path = smooth_path(coord_path, spline_factor, path_point)
 
+    # Plot the trajectory
     if PLOT_TRAJECTORY: plot_trajectory([coord_path], number_of_cells, cell_dimension, sim_dimension, map)
 
-    return simulation_revert_axis(coord_path, number_of_cells, cell_dimension, sim_dimension)
+    if COPPELIA_OUTPUT:
+        # Convert the path to CoppeliaSim coordinates
+        coord_path = simulation_revert_axis(coord_path, number_of_cells, cell_dimension, sim_dimension)
+
+    if SAVE_TO_FILE: 
+        # Save the positions to a file
+        save_positions_to_file(coord_path, f'PATH_to_follow/motherboat_positions.json', single_position=True)
+
+    return coord_path
     
 # --- Run the simulation ---
 if __name__ == '__main__':
