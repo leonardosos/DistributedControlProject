@@ -1,11 +1,9 @@
-# Distributed Control Interface Project
+# Distributed Control Project
 
 ## Overview
-This is a part of a project for the Distributed Control Systems course at the University of Modena and Reggio Emilia (UNIMORE). 
+This is my part of a project for the Distributed Control Systems course at the University of Modena and Reggio Emilia (UNIMORE). 
 
-The goal is to build a simulation of a cleaning portion of the sea. It starts with a recognition with a drone formation that detects garbage, then a motherboat finds its best position and dispatches a cleaning fleet of vessels that compute the cleaning, accordingly with human commands through an interface.
-
-## Author
+The goal is to program heterogenous agents (drones, vessels and motherboard), for moving in an obstacle presence environment and perform task exploiting distributed control. In a human centric approach the control room is simulated via a custom GUI.
 
 ## Technical Skills
 
@@ -48,3 +46,5 @@ The positions are updated and visualized in real-time using Matplotlib's FuncAni
 This folder contains the script [motherboat_w-obstacle.py](move_motherboat/motherboat_w-obstacle.py) which computes the path for the motherboat to follow using the A* algorithm with obstacle avoidance. The path is then smoothed using spline interpolation to ensure a smooth trajectory.
 The positions are updated and visualized in real-time using Matplotlib's FuncAnimation.
 
+## Author 
+Leonardo Brighenti 
